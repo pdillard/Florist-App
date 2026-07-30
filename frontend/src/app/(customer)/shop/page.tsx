@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { AddToCartButton } from '@/components/cart/AddToCartButton'
 
 export default async function ShopPage() {
   const supabase = await createClient()
@@ -29,6 +30,11 @@ export default async function ShopPage() {
               <h2 className="font-semibold">{product.name}</h2>
               <p>${(product.price_cents / 100).toFixed(2)}</p>
               <p className="text-sm text-gray-500">{product.stock_qty} in stock</p>
+              <AddToCartButton
+                productId={product.id}
+                name={product.name}
+                priceCents={product.price_cents}
+              />
             </div>
           ))}
         </div>
