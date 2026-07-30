@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useAuth } from '@/lib/auth/AuthContext'
 
 export type CartItem = {
   productId: string
@@ -40,47 +40,34 @@ function loadCart(ownerId: string): CartItem[] {
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  // AuthContext is the single source of truth for who's signed in.
+  // CartProvider must be nested inside AuthProvider for this to work.
+  const { user } = useAuth()
+  const ownerId = user?.id ?? 'guest'
+
   // Start empty so server-rendered HTML and first client render match.
   // Real cart is loaded from localStorage after mount, in the effect below.
   const [items, setItems] = useState<CartItem[]>([])
   const [hydrated, setHydrated] = useState(false)
-  const ownerIdRef = useRef<string>('guest')
+  const loadedOwnerRef = useRef<string | null>(null)
 
   useEffect(() => {
-    const supabase = createClient()
-    let active = true
-
-    supabase.auth.getUser().then(({ data }) => {
-      if (!active) return
-      const ownerId = data.user?.id ?? 'guest'
-      ownerIdRef.current = ownerId
+    // Only reload from storage when the owner actually changes (login,
+    // logout, switching accounts) - not on every render.
+    if (loadedOwnerRef.current !== ownerId) {
+      loadedOwnerRef.current = ownerId
       setItems(loadCart(ownerId))
       setHydrated(true)
-    })
-
-    // Fires on sign-in, sign-out, and token refresh. Only reload the cart
-    // when the actual owner changes, not on every refresh.
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      const newOwnerId = session?.user?.id ?? 'guest'
-      if (newOwnerId !== ownerIdRef.current) {
-        ownerIdRef.current = newOwnerId
-        setItems(loadCart(newOwnerId))
-      }
-    })
-
-    return () => {
-      active = false
-      subscription.subscription.unsubscribe()
     }
-  }, [])
+  }, [ownerId])
 
   useEffect(() => {
     // Don't overwrite storage with the empty initial state before we've
     // actually loaded from it once.
     if (hydrated) {
-      localStorage.setItem(storageKeyFor(ownerIdRef.current), JSON.stringify(items))
+      localStorage.setItem(storageKeyFor(ownerId), JSON.stringify(items))
     }
-  }, [items, hydrated])
+  }, [items, hydrated, ownerId])
 
   function addItem(item: Omit<CartItem, 'qty'>, qty = 1) {
     setItems((prev) => {

@@ -4,13 +4,14 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useCart } from '@/lib/cart/CartContext'
+import { useAuth } from '@/lib/auth/AuthContext'
 
 export default function CheckoutPage() {
   const { items, subtotalCents, clear } = useCart()
+  const { user, loading: checkingAuth } = useAuth()
   const router = useRouter()
   const supabase = createClient()
 
-  const [checkingAuth, setCheckingAuth] = useState(true)
   const [recipientName, setRecipientName] = useState('')
   const [recipientPhone, setRecipientPhone] = useState('')
   const [deliveryAddress, setDeliveryAddress] = useState('')
@@ -20,14 +21,10 @@ export default function CheckoutPage() {
   const [placedOrderId, setPlacedOrderId] = useState<string | null>(null)
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) {
-        router.push('/login')
-        return
-      }
-      setCheckingAuth(false)
-    })
-  }, [router, supabase])
+    if (!checkingAuth && !user) {
+      router.push('/login')
+    }
+  }, [checkingAuth, user, router])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -53,7 +50,7 @@ export default function CheckoutPage() {
     setSubmitting(false)
   }
 
-  if (checkingAuth) {
+  if (checkingAuth || !user) {
     return <main className="p-8">Checking sign-in...</main>
   }
 

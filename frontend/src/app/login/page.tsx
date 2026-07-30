@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useAuth, roleHome } from '@/lib/auth/AuthContext'
 
 export default function LoginPage() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
@@ -15,6 +16,28 @@ export default function LoginPage() {
 
   const router = useRouter()
   const supabase = createClient()
+  const { user, loading: authLoading } = useAuth()
+
+  // Someone already signed in shouldn't be able to sit on the login page
+  // (back button, typed URL, stale tab). Bounce them to their role home
+  // before the form ever renders.
+  useEffect(() => {
+    if (authLoading || !user) return
+
+    let active = true
+    supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => {
+        if (active) router.push(roleHome(data?.role))
+      })
+
+    return () => {
+      active = false
+    }
+  }, [authLoading, user, router, supabase])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -27,15 +50,29 @@ export default function LoginPage() {
         password,
         options: { data: { name, role } },
       })
+      // We already know the chosen role from the form, no need to look it up.
       if (error) setError(error.message)
-      else router.push('/')
+      else router.push(roleHome(role))
     } else {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) setError(error.message)
-      else router.push('/')
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
+        setError(error.message)
+      } else {
+        // Existing account - role isn't known client-side yet, look it up.
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single()
+        router.push(roleHome(profile?.role))
+      }
     }
 
     setLoading(false)
+  }
+
+  if (authLoading || user) {
+    return <main className="p-8">Redirecting...</main>
   }
 
   return (

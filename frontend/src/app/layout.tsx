@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AuthProvider } from "@/lib/auth/AuthContext";
 import { CartProvider } from "@/lib/cart/CartContext";
-import { CartCount } from "@/components/cart/CartCount";
+import { Header } from "@/components/layout/Header";
 
 export const metadata: Metadata = {
   title: "Florist Delivery Platform",
@@ -14,13 +15,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <CartProvider>
-          <header className="flex items-center justify-between border-b p-4">
-            <span className="font-semibold">Florist Delivery</span>
-            <CartCount />
-          </header>
-          {children}
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <Header />
+            {children}
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );
