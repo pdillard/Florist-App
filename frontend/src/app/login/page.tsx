@@ -10,7 +10,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
-  const [role, setRole] = useState<'customer' | 'florist' | 'driver'>('customer')
+  const [role, setRole] = useState<'customer' | 'merchant' | 'driver'>('customer')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -118,7 +118,7 @@ export default function LoginPage() {
             onChange={(e) => setRole(e.target.value as typeof role)}
           >
             <option value="customer">Customer</option>
-            <option value="florist">Florist</option>
+            <option value="merchant">Merchant</option>
             <option value="driver">Driver</option>
           </select>
         )}

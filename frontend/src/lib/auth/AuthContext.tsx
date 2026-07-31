@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 
-type Role = 'customer' | 'florist' | 'driver'
+type Role = 'customer' | 'merchant' | 'driver'
 
 type AuthContextValue = {
   user: User | null
@@ -65,7 +65,7 @@ export function useAuth() {
 // Where a signed-in user should land right after auth, based on role.
 export function roleHome(role: Role | null | undefined) {
   switch (role) {
-    case 'florist':
+    case 'merchant':
       return '/dashboard'
     // (driver)/driver/page.tsx is still an empty stub (not built yet, see
     // roadmap item 3) - routing there would error. Send drivers home until
