@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { AssignDriverControl } from '@/components/dashboard/AssignDriverControl'
 
@@ -52,8 +53,18 @@ export default async function DashboardPage() {
 
   return (
     <main className="p-8">
-      <h1 className="text-2xl font-bold mb-2">Dashboard</h1>
-      <p className="text-gray-500 mb-6">Welcome, {profile.name}</p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold mb-2">Dashboard</h1>
+          <p className="text-gray-500">Welcome, {profile.name}</p>
+        </div>
+        <Link
+          href="/dashboard/new-order"
+          className="rounded bg-black px-4 py-2 text-sm text-white hover:bg-gray-800"
+        >
+          New order
+        </Link>
+      </div>
 
       {orders.length === 0 ? (
         <p className="text-gray-500">No orders yet.</p>

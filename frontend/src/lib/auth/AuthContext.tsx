@@ -6,8 +6,15 @@ import type { User } from '@supabase/supabase-js'
 
 type Role = 'customer' | 'merchant' | 'driver'
 
+type Profile = {
+  role: Role
+  merchant_id: string | null
+  name: string | null
+}
+
 type AuthContextValue = {
   user: User | null
+  profile: Profile | null
   loading: boolean
   signOut: () => Promise<void>
 }
@@ -16,23 +23,41 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const supabase = createClient()
     let active = true
 
-    supabase.auth.getUser().then(({ data }) => {
+    async function loadProfile(userId: string) {
+      const { data } = await supabase
+        .from('profiles')
+        .select('role, merchant_id, name')
+        .eq('id', userId)
+        .single()
+      if (active) setProfile(data ?? null)
+    }
+
+    supabase.auth.getUser().then(async ({ data }) => {
       if (!active) return
       setUser(data.user)
+      if (data.user) {
+        await loadProfile(data.user.id)
+      }
       setLoading(false)
     })
 
-    // Keeps `user` in sync everywhere that reads it (header, cart, checkout)
-    // whenever sign-in/sign-out happens, without each of them subscribing
-    // to Supabase auth separately.
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Keeps `user`/`profile` in sync everywhere that reads them (header,
+    // cart, checkout) whenever sign-in/sign-out happens, without each of
+    // them subscribing to Supabase auth separately.
+    const { data: subscription } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null)
+      if (session?.user) {
+        await loadProfile(session.user.id)
+      } else {
+        setProfile(null)
+      }
       setLoading(false)
     })
 
@@ -48,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, signOut }}>
+    <AuthContext.Provider value={{ user, profile, loading, signOut }}>
       {children}
     </AuthContext.Provider>
   )
