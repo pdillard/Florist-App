@@ -3,6 +3,33 @@ import { createClient } from '@/lib/supabase/server'
 import { MerchantNav } from '@/components/dashboard/MerchantNav'
 import { OrderStatusPanel } from '@/components/dashboard/OrderStatusPanel'
 
+// See the comment in (driver)/driver/page.tsx: without generated Supabase
+// types, many-to-one embeds are inferred as arrays. These describe the
+// real shapes returned at runtime.
+type OrderItemRow = {
+  id: string
+  qty: number
+  unit_price_cents: number
+  product: { name: string } | null
+}
+
+type OrderEventRow = {
+  id: string
+  from_status: string | null
+  to_status: string
+  created_at: string
+  actor: { name: string | null } | null
+}
+
+type DeliveryRow = {
+  id: string
+  driver_id: string | null
+  picked_up_at: string | null
+  delivered_at: string | null
+  failure_reason: string | null
+  driver: { name: string | null } | null
+}
+
 export default async function OrderDetailPage({
   params,
 }: {
@@ -26,7 +53,7 @@ export default async function OrderDetailPage({
     redirect('/')
   }
 
-  const [{ data: order }, { data: items }, { data: events }, { data: delivery }] =
+  const [{ data: order }, { data: rawItems }, { data: rawEvents }, { data: rawDelivery }] =
     await Promise.all([
       supabase
         .from('orders')
@@ -56,6 +83,10 @@ export default async function OrderDetailPage({
   if (!order) {
     notFound()
   }
+
+  const items = (rawItems ?? []) as unknown as OrderItemRow[]
+  const events = (rawEvents ?? []) as unknown as OrderEventRow[]
+  const delivery = rawDelivery as unknown as DeliveryRow | null
 
   return (
     <main className="p-8">

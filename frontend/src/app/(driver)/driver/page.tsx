@@ -2,6 +2,28 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { DeliveryCard } from '@/components/driver/DeliveryCard'
 
+// Without generated Supabase types, the client can't tell that
+// order:orders(...) is a many-to-one embed (one order per delivery) and
+// infers it as an array instead, which doesn't match what actually comes
+// back at runtime. This type describes the real shape; the cast below
+// tells TypeScript to trust it.
+type DeliveryRow = {
+  id: string
+  order_id: string
+  assigned_at: string | null
+  picked_up_at: string | null
+  delivered_at: string | null
+  failure_reason: string | null
+  order: {
+    id: string
+    status: string
+    recipient_name: string | null
+    recipient_phone: string | null
+    delivery_address: string
+    card_message: string | null
+  } | null
+}
+
 export default async function DriverPage() {
   const supabase = await createClient()
 
@@ -20,7 +42,7 @@ export default async function DriverPage() {
     redirect('/')
   }
 
-  const { data: deliveries, error } = await supabase
+  const { data: rawDeliveries, error } = await supabase
     .from('deliveries')
     .select(
       'id, order_id, assigned_at, picked_up_at, delivered_at, failure_reason, order:orders(id, status, recipient_name, recipient_phone, delivery_address, card_message)'
@@ -32,7 +54,9 @@ export default async function DriverPage() {
     return <main className="p-8 text-red-600">Error loading deliveries: {error.message}</main>
   }
 
-  const activeDeliveries = (deliveries ?? []).filter(
+  const deliveries = (rawDeliveries ?? []) as unknown as DeliveryRow[]
+
+  const activeDeliveries = deliveries.filter(
     (d) => d.order && !['delivered', 'failed', 'cancelled'].includes(d.order.status)
   )
   const pastDeliveries = (deliveries ?? []).filter(

@@ -5,6 +5,19 @@ import { AssignDriverControl } from '@/components/dashboard/AssignDriverControl'
 import { MerchantNav } from '@/components/dashboard/MerchantNav'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 
+// See the comment in (driver)/driver/page.tsx: without generated Supabase
+// types, many-to-one embeds are inferred as arrays. These describe the
+// real shapes returned at runtime.
+type DeliveryDriverRow = {
+  order_id: string
+  driver: { name: string | null } | null
+}
+
+type AvailableDriverRow = {
+  user_id: string
+  driver: { name: string | null } | null
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient()
 
@@ -23,7 +36,7 @@ export default async function DashboardPage() {
     redirect('/')
   }
 
-  const [{ data: orders, error }, { data: deliveries }, { data: driverProfiles }] =
+  const [{ data: orders, error }, { data: rawDeliveries }, { data: rawDriverProfiles }] =
     await Promise.all([
       supabase
         .from('orders')
@@ -42,13 +55,16 @@ export default async function DashboardPage() {
     return <main className="p-8 text-red-600">Error loading orders: {error.message}</main>
   }
 
+  const deliveries = (rawDeliveries ?? []) as unknown as DeliveryDriverRow[]
+  const driverProfiles = (rawDriverProfiles ?? []) as unknown as AvailableDriverRow[]
+
   // order_id -> assigned driver's name, so we know which orders already
   // have a delivery and don't need the assignment control.
   const assignedDriverByOrder = new Map(
-    (deliveries ?? []).map((d) => [d.order_id, d.driver?.name ?? 'Unnamed driver'])
+    deliveries.map((d) => [d.order_id, d.driver?.name ?? 'Unnamed driver'])
   )
 
-  const availableDrivers = (driverProfiles ?? []).map((d) => ({
+  const availableDrivers = driverProfiles.map((d) => ({
     id: d.user_id,
     name: d.driver?.name ?? null,
   }))

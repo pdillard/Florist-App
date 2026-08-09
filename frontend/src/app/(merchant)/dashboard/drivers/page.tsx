@@ -3,6 +3,18 @@ import { createClient } from '@/lib/supabase/server'
 import { DriverAvailabilityToggle } from '@/components/dashboard/DriverAvailabilityToggle'
 import { MerchantNav } from '@/components/dashboard/MerchantNav'
 
+// See the comment in (driver)/driver/page.tsx: without generated Supabase
+// types, a many-to-one embed (driver:profiles!user_id, one profile per
+// driver_profiles row) is inferred as an array. This describes the real
+// shape returned at runtime.
+type DriverRow = {
+  user_id: string
+  vehicle_type: string | null
+  license_plate: string | null
+  is_available: boolean
+  driver: { name: string | null; phone: string | null } | null
+}
+
 export default async function DriversPage() {
   const supabase = await createClient()
 
@@ -21,13 +33,15 @@ export default async function DriversPage() {
     redirect('/')
   }
 
-  const { data: drivers, error } = await supabase
+  const { data: rawDrivers, error } = await supabase
     .from('driver_profiles')
     .select('user_id, vehicle_type, license_plate, is_available, driver:profiles!user_id(name, phone)')
 
   if (error) {
     return <main className="p-8 text-red-600">Error loading drivers: {error.message}</main>
   }
+
+  const drivers = (rawDrivers ?? []) as unknown as DriverRow[]
 
   return (
     <main className="p-8">
