@@ -25,7 +25,7 @@ export function MerchantNav() {
           <Link
             key={link.href}
             href={link.href}
-            className={`border-b-2 px-3 py-2 text-sm ${
+            className={`border-b-2 px-3 py-2 text-sm transition-colors duration-150 ${
               isActive
                 ? 'border-black font-medium text-black'
                 : 'border-transparent text-gray-500 hover:text-black'

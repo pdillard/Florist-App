@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth, roleHome } from '@/lib/auth/AuthContext'
+import { Button } from '@/components/shared/Button'
 
 export default function LoginPage() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
@@ -125,18 +126,14 @@ export default function LoginPage() {
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded bg-black p-2 text-white disabled:opacity-50"
-        >
-          {loading ? 'Loading...' : mode === 'signin' ? 'Sign in' : 'Sign up'}
-        </button>
+        <Button type="submit" loading={loading} className="w-full p-2">
+          {mode === 'signin' ? 'Sign in' : 'Sign up'}
+        </Button>
 
         <button
           type="button"
           onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
-          className="w-full text-sm text-gray-500 underline"
+          className="w-full text-sm text-gray-500 underline transition-colors hover:text-gray-700"
         >
           {mode === 'signin' ? 'Need an account? Sign up' : 'Already have an account? Sign in'}
         </button>

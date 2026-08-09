@@ -72,7 +72,7 @@ export default async function DashboardPage() {
         </div>
         <Link
           href="/dashboard/new-order"
-          className="rounded bg-black px-4 py-2 text-sm text-white hover:bg-gray-800"
+          className="rounded bg-black px-4 py-2 text-sm text-white transition-all duration-150 ease-out hover:bg-gray-800 active:scale-[0.97]"
         >
           New order
         </Link>
@@ -95,7 +95,7 @@ export default async function DashboardPage() {
             {sortedOrders.map((order) => {
               const assignedDriver = assignedDriverByOrder.get(order.id)
               return (
-                <tr key={order.id} className="border-b hover:bg-gray-50">
+                <tr key={order.id} className="border-b transition-colors hover:bg-gray-50">
                   <td className="py-2">
                     <Link href={`/dashboard/orders/${order.id}`} className="hover:underline">
                       {order.recipient_name ?? '—'}

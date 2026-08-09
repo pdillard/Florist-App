@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useCart } from '@/lib/cart/CartContext'
 import { useAuth } from '@/lib/auth/AuthContext'
+import { Button } from '@/components/shared/Button'
 
 export default function CheckoutPage() {
   const { items, subtotalCents, clear } = useCart()
@@ -114,13 +115,9 @@ export default function CheckoutPage() {
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full rounded bg-black p-2 text-white disabled:opacity-50"
-        >
-          {submitting ? 'Placing order...' : 'Place order'}
-        </button>
+        <Button type="submit" loading={submitting} className="w-full p-2">
+          Place order
+        </Button>
       </form>
     </main>
   )

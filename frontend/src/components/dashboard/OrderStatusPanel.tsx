@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { Button } from '@/components/shared/Button'
 
 export function OrderStatusPanel({
   orderId,
@@ -49,13 +50,9 @@ export function OrderStatusPanel({
       <StatusBadge status={status} />
       {cancellable && (
         <div>
-          <button
-            onClick={handleCancel}
-            disabled={submitting}
-            className="rounded border border-red-600 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
-          >
-            {submitting ? 'Cancelling...' : 'Cancel order'}
-          </button>
+          <Button variant="danger" onClick={handleCancel} loading={submitting}>
+            Cancel order
+          </Button>
           {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
         </div>
       )}

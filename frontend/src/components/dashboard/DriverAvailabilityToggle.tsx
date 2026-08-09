@@ -38,7 +38,7 @@ export function DriverAvailabilityToggle({
     <button
       onClick={toggle}
       disabled={submitting}
-      className={`rounded px-2 py-1 text-xs ${
+      className={`rounded px-2 py-1 text-xs transition-all duration-150 ease-out active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 ${
         isAvailable ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
       }`}
     >

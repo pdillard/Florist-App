@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/shared/Button'
 
 type Driver = {
   id: string
@@ -66,13 +67,9 @@ export function AssignDriverControl({
           </option>
         ))}
       </select>
-      <button
-        onClick={handleAssign}
-        disabled={submitting}
-        className="rounded bg-black px-2 py-1 text-xs text-white disabled:opacity-50"
-      >
-        {submitting ? 'Assigning...' : 'Assign'}
-      </button>
+      <Button onClick={handleAssign} loading={submitting} className="px-2 py-1 text-xs">
+        Assign
+      </Button>
       {error && <span className="text-xs text-red-600">{error}</span>}
     </div>
   )

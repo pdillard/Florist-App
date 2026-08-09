@@ -28,23 +28,23 @@ export function Header() {
 
       <div className="flex items-center gap-4">
         {isMerchant && pathname !== '/dashboard' && (
-          <Link href="/dashboard" className="text-sm underline">
+          <Link href="/dashboard" className="text-sm text-gray-700 underline transition-colors hover:text-black">
             Dashboard
           </Link>
         )}
         {isDriver && pathname !== '/driver' && (
-          <Link href="/driver" className="text-sm underline">
+          <Link href="/driver" className="text-sm text-gray-700 underline transition-colors hover:text-black">
             My deliveries
           </Link>
         )}
         {isCustomer && pathname !== '/orders' && (
-          <Link href="/orders" className="text-sm underline">
+          <Link href="/orders" className="text-sm text-gray-700 underline transition-colors hover:text-black">
             My orders
           </Link>
         )}
         {!isLoginPage && <CartCount />}
         {user && (
-          <button onClick={handleSignOut} className="text-sm underline">
+          <button onClick={handleSignOut} className="text-sm text-gray-700 underline transition-colors hover:text-black">
             Sign out
           </button>
         )}

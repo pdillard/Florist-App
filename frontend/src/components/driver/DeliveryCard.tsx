@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { Button } from '@/components/shared/Button'
 
 type Order = {
   id: string
@@ -21,11 +21,14 @@ type Delivery = {
 }
 
 export function DeliveryCard({ delivery }: { delivery: Delivery }) {
+  // Status lives in local state and updates the moment the server confirms
+  // the change, instead of waiting on router.refresh() to re-fetch the
+  // whole page just to learn the value we already just set.
+  const [status, setStatus] = useState(delivery.order?.status ?? 'assigned')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [failureReason, setFailureReason] = useState('')
   const [showFailureInput, setShowFailureInput] = useState(false)
-  const router = useRouter()
   const supabase = createClient()
 
   const order = delivery.order
@@ -38,13 +41,12 @@ export function DeliveryCard({ delivery }: { delivery: Delivery }) {
       p_order_id: order!.id,
       p_new_status: 'out_for_delivery',
     })
+    setSubmitting(false)
     if (error) {
       setError(error.message)
-      setSubmitting(false)
       return
     }
-    setSubmitting(false)
-    router.refresh()
+    setStatus('out_for_delivery')
   }
 
   // Uploading a photo doubles as the "mark delivered" action, since the
@@ -88,14 +90,14 @@ export function DeliveryCard({ delivery }: { delivery: Delivery }) {
       p_new_status: 'delivered',
     })
 
+    setSubmitting(false)
+
     if (statusError) {
       setError(statusError.message)
-      setSubmitting(false)
       return
     }
 
-    setSubmitting(false)
-    router.refresh()
+    setStatus('delivered')
   }
 
   async function handleReportFailure() {
@@ -110,13 +112,12 @@ export function DeliveryCard({ delivery }: { delivery: Delivery }) {
       p_new_status: 'failed',
       p_failure_reason: failureReason,
     })
+    setSubmitting(false)
     if (error) {
       setError(error.message)
-      setSubmitting(false)
       return
     }
-    setSubmitting(false)
-    router.refresh()
+    setStatus('failed')
   }
 
   return (
@@ -132,26 +133,22 @@ export function DeliveryCard({ delivery }: { delivery: Delivery }) {
             <p className="mt-1 text-sm italic text-gray-600">&quot;{order.card_message}&quot;</p>
           )}
         </div>
-        <StatusBadge status={order.status} />
+        <StatusBadge status={status} />
       </div>
 
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
 
       <div className="mt-3 flex flex-wrap items-center gap-3">
-        {order.status === 'assigned' && (
-          <button
-            onClick={handleStartDelivery}
-            disabled={submitting}
-            className="rounded bg-black px-3 py-1.5 text-sm text-white disabled:opacity-50"
-          >
+        {status === 'assigned' && (
+          <Button onClick={handleStartDelivery} loading={submitting}>
             Start delivery
-          </button>
+          </Button>
         )}
 
-        {order.status === 'out_for_delivery' && (
+        {status === 'out_for_delivery' && (
           <>
-            <label className="cursor-pointer rounded border px-3 py-1.5 text-sm">
-              Upload proof photo
+            <label className="cursor-pointer rounded border px-3 py-1.5 text-sm transition-all duration-150 ease-out hover:bg-gray-50 active:scale-[0.97]">
+              {submitting ? 'Uploading...' : 'Upload proof photo'}
               <input
                 type="file"
                 accept="image/*"
@@ -163,7 +160,7 @@ export function DeliveryCard({ delivery }: { delivery: Delivery }) {
             {!showFailureInput ? (
               <button
                 onClick={() => setShowFailureInput(true)}
-                className="text-sm text-red-600 underline"
+                className="text-sm text-red-600 underline transition-colors hover:text-red-800"
               >
                 Report failed delivery
               </button>
@@ -175,13 +172,14 @@ export function DeliveryCard({ delivery }: { delivery: Delivery }) {
                   value={failureReason}
                   onChange={(e) => setFailureReason(e.target.value)}
                 />
-                <button
+                <Button
+                  variant="danger"
                   onClick={handleReportFailure}
-                  disabled={submitting}
-                  className="rounded bg-red-600 px-3 py-1.5 text-sm text-white disabled:opacity-50"
+                  loading={submitting}
+                  className="border-transparent bg-red-600 text-white hover:bg-red-700"
                 >
                   Confirm failed
-                </button>
+                </Button>
               </div>
             )}
           </>

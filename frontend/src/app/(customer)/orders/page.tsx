@@ -35,7 +35,7 @@ export default async function OrdersPage() {
             <Link
               key={order.id}
               href={`/track/${order.id}`}
-              className="block rounded-lg border p-4 hover:bg-gray-50"
+              className="block rounded-lg border p-4 transition-colors hover:bg-gray-50"
             >
               <div className="flex items-center justify-between">
                 <div>

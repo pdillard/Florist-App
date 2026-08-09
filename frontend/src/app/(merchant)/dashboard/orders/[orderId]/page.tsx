@@ -57,21 +57,13 @@ export default async function OrderDetailPage({
     notFound()
   }
 
-  // Matches the legal transitions in update_order_status(): only these
-  // three states can still be cancelled, once a driver has actually
-  // picked something up the only outcomes left are delivered or failed.
-  const cancellable = ['pending', 'confirmed', 'assigned'].includes(order.status)
-
   return (
     <main className="p-8">
       <MerchantNav />
 
-      <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="mb-2 text-2xl font-bold">{order.recipient_name ?? 'Order'}</h1>
-          <StatusBadge status={order.status} />
-        </div>
-        {cancellable && <CancelOrderButton orderId={order.id} />}
+      <div className="mb-6">
+        <h1 className="mb-2 text-2xl font-bold">{order.recipient_name ?? 'Order'}</h1>
+        <OrderStatusPanel orderId={order.id} initialStatus={order.status} />
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">

@@ -9,3 +9,21 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+/* A moving gradient reads as "actively loading" much more than a flat
+   opacity pulse, which is why skeletons use this instead of Tailwind's
+   built-in animate-pulse. */
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #eee 25%, #e0e0e0 37%, #eee 63%);
+  background-size: 400px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}

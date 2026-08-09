@@ -64,7 +64,7 @@ export default function CartPage() {
         </p>
         <Link
           href="/checkout"
-          className="rounded bg-black px-4 py-2 text-white hover:bg-gray-800"
+          className="rounded bg-black px-4 py-2 text-white transition-all duration-150 ease-out hover:bg-gray-800 active:scale-[0.97]"
         >
           Checkout
         </Link>

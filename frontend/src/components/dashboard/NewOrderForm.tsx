@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/shared/Button'
 
 type Product = {
   id: string
@@ -114,12 +115,12 @@ export function NewOrderForm({ products }: { products: Product[] }) {
       <div>
         <p className="mb-4">Order placed. Order ID: {placedOrderId}</p>
         <div className="flex gap-4">
-          <button onClick={handleNewOrder} className="rounded bg-black px-4 py-2 text-white">
+          <Button onClick={handleNewOrder} className="px-4 py-2">
             Enter another order
-          </button>
-          <button onClick={() => router.push('/dashboard')} className="rounded border px-4 py-2">
+          </Button>
+          <Button variant="secondary" onClick={() => router.push('/dashboard')} className="px-4 py-2">
             Back to dashboard
-          </button>
+          </Button>
         </div>
       </div>
     )
@@ -153,9 +154,9 @@ export function NewOrderForm({ products }: { products: Product[] }) {
             onChange={(e) => setPickerQty(Number(e.target.value))}
             className="w-20 rounded border p-2"
           />
-          <button type="button" onClick={addItem} className="rounded border px-3 py-2 text-sm">
+          <Button type="button" variant="secondary" onClick={addItem} className="px-3 py-2">
             Add
-          </button>
+          </Button>
         </div>
 
         {items.length === 0 ? (
@@ -175,7 +176,7 @@ export function NewOrderForm({ products }: { products: Product[] }) {
                   <button
                     type="button"
                     onClick={() => removeItem(item.productId)}
-                    className="text-red-600 underline"
+                    className="text-red-600 underline transition-colors hover:text-red-800"
                   >
                     Remove
                   </button>
@@ -243,13 +244,9 @@ export function NewOrderForm({ products }: { products: Product[] }) {
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <button
-        type="submit"
-        disabled={submitting}
-        className="w-full rounded bg-black p-2 text-white disabled:opacity-50"
-      >
-        {submitting ? 'Placing order...' : 'Place order'}
-      </button>
+      <Button type="submit" loading={submitting} className="w-full p-2">
+        Place order
+      </Button>
     </form>
   )
 }

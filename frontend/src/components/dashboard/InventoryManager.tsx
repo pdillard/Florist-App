@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/shared/Button'
 
 type Product = {
   id: string
@@ -116,13 +117,9 @@ export function InventoryManager({
           />
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}
-        <button
-          type="submit"
-          disabled={submitting}
-          className="rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-50"
-        >
-          {submitting ? 'Adding...' : 'Add product'}
-        </button>
+        <Button type="submit" loading={submitting} className="px-4 py-2">
+          Add product
+        </Button>
       </form>
 
       <div>
@@ -232,13 +229,9 @@ function ProductRow({
         <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} />
         Active
       </label>
-      <button
-        onClick={handleSave}
-        disabled={submitting}
-        className="rounded bg-black px-3 py-1 text-xs text-white disabled:opacity-50"
-      >
-        {submitting ? 'Saving...' : saved ? 'Saved' : 'Save'}
-      </button>
+      <Button onClick={handleSave} loading={submitting} className="px-3 py-1 text-xs">
+        {saved ? 'Saved' : 'Save'}
+      </Button>
       {error && <span className="text-xs text-red-600">{error}</span>}
     </div>
   )
