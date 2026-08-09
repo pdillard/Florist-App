@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { DriverAvailabilityToggle } from '@/components/dashboard/DriverAvailabilityToggle'
+import { DriverInviteCode } from '@/components/dashboard/DriverInviteCode'
 import { MerchantNav } from '@/components/dashboard/MerchantNav'
 
 // See the comment in (driver)/driver/page.tsx: without generated Supabase
@@ -25,7 +26,7 @@ export default async function DriversPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, merchant_id')
     .eq('id', user.id)
     .single()
 
@@ -33,9 +34,12 @@ export default async function DriversPage() {
     redirect('/')
   }
 
-  const { data: rawDrivers, error } = await supabase
-    .from('driver_profiles')
-    .select('user_id, vehicle_type, license_plate, is_available, driver:profiles!user_id(name, phone)')
+  const [{ data: rawDrivers, error }, { data: merchant }] = await Promise.all([
+    supabase
+      .from('driver_profiles')
+      .select('user_id, vehicle_type, license_plate, is_available, driver:profiles!user_id(name, phone)'),
+    supabase.from('merchants').select('invite_code').eq('id', profile.merchant_id).single(),
+  ])
 
   if (error) {
     return <main className="p-8 text-red-600">Error loading drivers: {error.message}</main>
@@ -48,9 +52,12 @@ export default async function DriversPage() {
       <MerchantNav />
       <h1 className="text-2xl font-bold mb-6">Drivers</h1>
 
+      {merchant?.invite_code && <DriverInviteCode inviteCode={merchant.invite_code} />}
+
       {!drivers || drivers.length === 0 ? (
         <p className="text-gray-500">
-          No drivers yet. Have them sign up with the driver role, they will show up here.
+          No drivers yet. Share the invite code above and have them sign up with the driver role
+          &mdash; they will show up here.
         </p>
       ) : (
         <table className="w-full border-collapse">

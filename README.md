@@ -24,21 +24,18 @@ Delivery, tracking, and proof-of-delivery are the product, not a bolt-on to a PO
 
 ## Roles
 
-Three roles, chosen at signup: `customer`, `merchant`, `driver`. A merchant signing up becomes
-the owner of a shop (`merchants` table); every merchant/driver account is scoped to one shop via
-`profiles.merchant_id`. Multi-shop signup (a second real shop signing up on its own) isn't built
-yet, onboarding a second shop today requires a manual SQL insert, see `sql/005_multi_tenancy_schema.sql`.
+Three roles, chosen at signup: `customer`, `merchant`, `driver`. A merchant signing up creates
+their own shop (`merchants` table) on the spot, no invite needed. A driver signing up must enter
+an existing shop's invite code (shown to the merchant on the Drivers dashboard page, and
+regenerable there); this is what scopes `profiles.merchant_id` for driver accounts and stops
+anyone from attaching themselves to a shop's roster without that shop's say-so. Customers aren't
+scoped to a single shop. See `sql/012_merchant_signup_and_driver_invites.sql`.
 
 ## Known limitations (v1)
 
 - **No payments.** Orders are created `unpaid`, merchants collect payment outside the app.
 - **No SMS.** Status changes are visible in the app (dashboard, driver app, tracking page), not
   pushed via text.
-- **Single shop only.** The schema supports multiple shops, but the signup flow to onboard a
-  second one isn't built.
-- **`profiles` isn't fully isolated across shops** for signed-in users (see
-  `sql/011_profiles_require_auth.sql`), only anonymous access is blocked. Fix before onboarding
-  a second real shop.
 - Email confirmation is disabled in Supabase Auth for testing convenience. **Re-enable before
   accepting real signups.**
 

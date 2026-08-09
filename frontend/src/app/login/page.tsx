@@ -12,6 +12,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
   const [role, setRole] = useState<'customer' | 'merchant' | 'driver'>('customer')
+  const [shopName, setShopName] = useState('')
+  const [inviteCode, setInviteCode] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -49,11 +51,33 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { name, role } },
+        options: {
+          data: {
+            name,
+            role,
+            // Only the relevant one of these actually matters per role
+            // (see handle_new_user() in sql/012), but there's no harm in
+            // always sending both.
+            shop_name: shopName,
+            invite_code: inviteCode,
+          },
+        },
       })
       // We already know the chosen role from the form, no need to look it up.
-      if (error) setError(error.message)
-      else router.push(roleHome(role))
+      if (error) {
+        // handle_new_user() raises a specific exception for a bad/missing
+        // invite code (sql/012), but Supabase's GoTrue sometimes flattens
+        // that into a generic "Database error saving new user" instead of
+        // passing the real message through. Give driver signups a better
+        // default in that case rather than a confusing dead end.
+        if (role === 'driver' && /database error/i.test(error.message)) {
+          setError('That invite code is missing or invalid. Check it with your shop and try again.')
+        } else {
+          setError(error.message)
+        }
+      } else {
+        router.push(roleHome(role))
+      }
     } else {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) {
@@ -122,6 +146,31 @@ export default function LoginPage() {
             <option value="merchant">Merchant</option>
             <option value="driver">Driver</option>
           </select>
+        )}
+
+        {mode === 'signup' && role === 'merchant' && (
+          <input
+            className="w-full rounded border p-2"
+            placeholder="Shop name"
+            value={shopName}
+            onChange={(e) => setShopName(e.target.value)}
+            required
+          />
+        )}
+
+        {mode === 'signup' && role === 'driver' && (
+          <div>
+            <input
+              className="w-full rounded border p-2 uppercase"
+              placeholder="Shop invite code"
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value)}
+              required
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Get this from the shop you&apos;re driving for &mdash; it&apos;s on their Drivers dashboard page.
+            </p>
+          </div>
         )}
 
         {error && <p className="text-sm text-red-600">{error}</p>}
