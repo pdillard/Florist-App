@@ -49,8 +49,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
 
     // Keeps `user`/`profile` in sync everywhere that reads them (header,
-    // cart, checkout) whenever sign-in/sign-out happens, without each of
-    // them subscribing to Supabase auth separately.
+    // dashboard, driver app) whenever sign-in/sign-out happens, without
+    // each of them subscribing to Supabase auth separately.
     const { data: subscription } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null)
       if (session?.user) {
@@ -88,6 +88,11 @@ export function useAuth() {
 }
 
 // Where a signed-in user should land right after auth, based on role.
+// There's no customer-facing storefront in this app (positioning is an
+// add-on that sits next to a shop's existing POS/storefront, not a
+// replacement for one - see README), so a customer account's home is its
+// order history, which they'd only reach via a tracking link a shop sent
+// them in the first place.
 export function roleHome(role: Role | null | undefined) {
   switch (role) {
     case 'merchant':
@@ -96,6 +101,6 @@ export function roleHome(role: Role | null | undefined) {
       return '/driver'
     case 'customer':
     default:
-      return '/shop'
+      return '/orders'
   }
 }

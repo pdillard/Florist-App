@@ -2,6 +2,7 @@ import { redirect, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { MerchantNav } from '@/components/dashboard/MerchantNav'
 import { OrderStatusPanel } from '@/components/dashboard/OrderStatusPanel'
+import { PaymentPanel } from '@/components/dashboard/PaymentPanel'
 
 // See the comment in (driver)/driver/page.tsx: without generated Supabase
 // types, many-to-one embeds are inferred as arrays. These describe the
@@ -92,9 +93,14 @@ export default async function OrderDetailPage({
     <main className="p-8">
       <MerchantNav />
 
-      <div className="mb-6">
+      <div className="mb-6 space-y-3">
         <h1 className="mb-2 text-2xl font-bold">{order.recipient_name ?? 'Order'}</h1>
         <OrderStatusPanel orderId={order.id} initialStatus={order.status} />
+        <PaymentPanel
+          orderId={order.id}
+          initialPaymentStatus={order.payment_status}
+          orderStatus={order.status}
+        />
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">

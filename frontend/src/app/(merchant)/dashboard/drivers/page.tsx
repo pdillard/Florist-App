@@ -38,7 +38,11 @@ export default async function DriversPage() {
     supabase
       .from('driver_profiles')
       .select('user_id, vehicle_type, license_plate, is_available, driver:profiles!user_id(name, phone)'),
-    supabase.from('merchants').select('invite_code').eq('id', profile.merchant_id).single(),
+    supabase
+      .from('merchants')
+      .select('invite_code, invite_code_expires_at')
+      .eq('id', profile.merchant_id)
+      .single(),
   ])
 
   if (error) {
@@ -52,7 +56,12 @@ export default async function DriversPage() {
       <MerchantNav />
       <h1 className="text-2xl font-bold mb-6">Drivers</h1>
 
-      {merchant?.invite_code && <DriverInviteCode inviteCode={merchant.invite_code} />}
+      {merchant?.invite_code && (
+        <DriverInviteCode
+          inviteCode={merchant.invite_code}
+          expiresAt={merchant.invite_code_expires_at}
+        />
+      )}
 
       {!drivers || drivers.length === 0 ? (
         <p className="text-gray-500">

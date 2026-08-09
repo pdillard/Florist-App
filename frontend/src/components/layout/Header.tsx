@@ -3,14 +3,12 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/AuthContext'
-import { CartCount } from '@/components/cart/CartCount'
 
 export function Header() {
   const pathname = usePathname()
   const router = useRouter()
   const { user, profile, signOut } = useAuth()
 
-  const isLoginPage = pathname === '/login'
   const isMerchant = profile?.role === 'merchant'
   const isCustomer = profile?.role === 'customer'
   const isDriver = profile?.role === 'driver'
@@ -42,7 +40,6 @@ export function Header() {
             My orders
           </Link>
         )}
-        {!isLoginPage && <CartCount />}
         {user && (
           <button onClick={handleSignOut} className="text-sm text-gray-700 underline transition-colors hover:text-black">
             Sign out

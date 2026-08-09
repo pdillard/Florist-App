@@ -3,6 +3,13 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 
+// There's no self-serve storefront in this app - orders come from a shop
+// entering them directly (merchant_create_order, sql/007). A customer
+// account only ever accumulates history here if a shop links an order to
+// one, which isn't wired up yet either. This page mostly exists so a
+// tracking link (/track/[orderId], no login required) has somewhere to
+// point a signed-in customer back to.
+
 export default async function OrdersPage() {
   const supabase = await createClient()
 
@@ -26,9 +33,7 @@ export default async function OrdersPage() {
       <h1 className="text-2xl font-bold mb-6">Your orders</h1>
 
       {!orders || orders.length === 0 ? (
-        <p className="text-gray-500">
-          No orders yet. <Link href="/shop" className="underline">Browse the shop</Link>.
-        </p>
+        <p className="text-gray-500">No orders yet.</p>
       ) : (
         <div className="space-y-3">
           {orders.map((order) => (

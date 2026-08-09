@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth/AuthContext";
-import { CartProvider } from "@/lib/cart/CartContext";
 import { Header } from "@/components/layout/Header";
 
 export const metadata: Metadata = {
   title: "Florist Delivery Platform",
-  description: "Order, track, and deliver flowers.",
+  description: "Enter, dispatch, and track flower deliveries.",
 };
 
 export default function RootLayout({
@@ -16,10 +15,8 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AuthProvider>
-          <CartProvider>
-            <Header />
-            {children}
-          </CartProvider>
+          <Header />
+          {children}
         </AuthProvider>
       </body>
     </html>

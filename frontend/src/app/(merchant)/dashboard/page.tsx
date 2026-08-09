@@ -40,7 +40,7 @@ export default async function DashboardPage() {
     await Promise.all([
       supabase
         .from('orders')
-        .select('id, status, recipient_name, delivery_address, total_cents, created_at')
+        .select('id, status, payment_status, recipient_name, delivery_address, total_cents, created_at')
         .order('created_at', { ascending: false }),
       supabase
         .from('deliveries')
@@ -103,6 +103,7 @@ export default async function DashboardPage() {
               <th className="py-2">Recipient</th>
               <th>Address</th>
               <th>Status</th>
+              <th>Payment</th>
               <th>Total</th>
               <th>Driver</th>
             </tr>
@@ -120,6 +121,17 @@ export default async function DashboardPage() {
                   <td>{order.delivery_address}</td>
                   <td>
                     <StatusBadge status={order.status} />
+                  </td>
+                  <td>
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-medium ${
+                        order.payment_status === 'paid'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}
+                    >
+                      {order.payment_status === 'paid' ? 'Paid' : 'Unpaid'}
+                    </span>
                   </td>
                   <td>${(order.total_cents / 100).toFixed(2)}</td>
                   <td>
