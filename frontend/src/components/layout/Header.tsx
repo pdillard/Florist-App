@@ -12,6 +12,8 @@ export function Header() {
 
   const isLoginPage = pathname === '/login'
   const isMerchant = profile?.role === 'merchant'
+  const isCustomer = profile?.role === 'customer'
+  const isDriver = profile?.role === 'driver'
 
   async function handleSignOut() {
     await signOut()
@@ -28,6 +30,16 @@ export function Header() {
         {isMerchant && pathname !== '/dashboard' && (
           <Link href="/dashboard" className="text-sm underline">
             Dashboard
+          </Link>
+        )}
+        {isDriver && pathname !== '/driver' && (
+          <Link href="/driver" className="text-sm underline">
+            My deliveries
+          </Link>
+        )}
+        {isCustomer && pathname !== '/orders' && (
+          <Link href="/orders" className="text-sm underline">
+            My orders
           </Link>
         )}
         {!isLoginPage && <CartCount />}

@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { AssignDriverControl } from '@/components/dashboard/AssignDriverControl'
+import { MerchantNav } from '@/components/dashboard/MerchantNav'
+import { StatusBadge } from '@/components/shared/StatusBadge'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -51,11 +53,21 @@ export default async function DashboardPage() {
     name: d.driver?.name ?? null,
   }))
 
+  // Pending orders need action (assign a driver), surface them first so a
+  // busy manager sees what needs attention without hunting for it.
+  const sortedOrders = [...orders].sort((a, b) => {
+    if (a.status === 'pending' && b.status !== 'pending') return -1
+    if (a.status !== 'pending' && b.status === 'pending') return 1
+    return 0
+  })
+
   return (
     <main className="p-8">
+      <MerchantNav />
+
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold mb-2">Dashboard</h1>
+          <h1 className="text-2xl font-bold mb-2">Orders</h1>
           <p className="text-gray-500">Welcome, {profile.name}</p>
         </div>
         <Link
@@ -80,16 +92,18 @@ export default async function DashboardPage() {
             </tr>
           </thead>
           <tbody>
-            {orders.map((order) => {
+            {sortedOrders.map((order) => {
               const assignedDriver = assignedDriverByOrder.get(order.id)
               return (
-                <tr key={order.id} className="border-b">
-                  <td className="py-2">{order.recipient_name ?? '—'}</td>
+                <tr key={order.id} className="border-b hover:bg-gray-50">
+                  <td className="py-2">
+                    <Link href={`/dashboard/orders/${order.id}`} className="hover:underline">
+                      {order.recipient_name ?? '—'}
+                    </Link>
+                  </td>
                   <td>{order.delivery_address}</td>
                   <td>
-                    <span className="rounded-full bg-gray-100 px-2 py-1 text-xs">
-                      {order.status}
-                    </span>
+                    <StatusBadge status={order.status} />
                   </td>
                   <td>${(order.total_cents / 100).toFixed(2)}</td>
                   <td>

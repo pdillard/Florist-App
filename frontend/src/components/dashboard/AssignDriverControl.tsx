@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 type Driver = {
@@ -19,7 +18,10 @@ export function AssignDriverControl({
   const [driverId, setDriverId] = useState(drivers[0]?.id ?? '')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
+  // Once assigned, we already know the driver's name from the `drivers`
+  // list we were given, no need to ask the server to tell us back what we
+  // just told it.
+  const [assignedName, setAssignedName] = useState<string | null>(null)
   const supabase = createClient()
 
   async function handleAssign() {
@@ -32,15 +34,19 @@ export function AssignDriverControl({
       p_driver_id: driverId,
     })
 
+    setSubmitting(false)
+
     if (error) {
       setError(error.message)
-      setSubmitting(false)
       return
     }
 
-    // Re-runs the dashboard's server-side data fetch so the new
-    // assignment shows up without a full page reload.
-    router.refresh()
+    const picked = drivers.find((d) => d.id === driverId)
+    setAssignedName(picked?.name ?? 'Unnamed driver')
+  }
+
+  if (assignedName) {
+    return <span className="text-sm">{assignedName}</span>
   }
 
   if (drivers.length === 0) {

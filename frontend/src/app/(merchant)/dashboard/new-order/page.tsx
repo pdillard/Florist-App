@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { NewOrderForm } from '@/components/dashboard/NewOrderForm'
+import { MerchantNav } from '@/components/dashboard/MerchantNav'
 
 export default async function NewOrderPage() {
   const supabase = await createClient()
@@ -33,6 +34,7 @@ export default async function NewOrderPage() {
 
   return (
     <main className="p-8">
+      <MerchantNav />
       <h1 className="text-2xl font-bold mb-6">New order</h1>
       <NewOrderForm products={products ?? []} />
     </main>

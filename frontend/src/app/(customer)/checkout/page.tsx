@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useCart } from '@/lib/cart/CartContext'
@@ -58,7 +59,10 @@ export default function CheckoutPage() {
     return (
       <main className="p-8">
         <h1 className="text-2xl font-bold mb-2">Order placed</h1>
-        <p className="text-gray-600">Order ID: {placedOrderId}</p>
+        <p className="mb-4 text-gray-600">Order ID: {placedOrderId}</p>
+        <Link href={`/track/${placedOrderId}`} className="underline">
+          Track this order
+        </Link>
       </main>
     )
   }

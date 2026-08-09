@@ -1,0 +1,71 @@
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { DeliveryCard } from '@/components/driver/DeliveryCard'
+
+export default async function DriverPage() {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    redirect('/login')
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role, name')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'driver') {
+    redirect('/')
+  }
+
+  const { data: deliveries, error } = await supabase
+    .from('deliveries')
+    .select(
+      'id, order_id, assigned_at, picked_up_at, delivered_at, failure_reason, order:orders(id, status, recipient_name, recipient_phone, delivery_address, card_message)'
+    )
+    .eq('driver_id', user.id)
+    .order('assigned_at', { ascending: false })
+
+  if (error) {
+    return <main className="p-8 text-red-600">Error loading deliveries: {error.message}</main>
+  }
+
+  const activeDeliveries = (deliveries ?? []).filter(
+    (d) => d.order && !['delivered', 'failed', 'cancelled'].includes(d.order.status)
+  )
+  const pastDeliveries = (deliveries ?? []).filter(
+    (d) => d.order && ['delivered', 'failed', 'cancelled'].includes(d.order.status)
+  )
+
+  return (
+    <main className="p-8">
+      <h1 className="text-2xl font-bold mb-2">My deliveries</h1>
+      <p className="text-gray-500 mb-6">Welcome, {profile.name}</p>
+
+      {activeDeliveries.length === 0 ? (
+        <p className="text-gray-500">No active deliveries right now.</p>
+      ) : (
+        <div className="space-y-4">
+          {activeDeliveries.map((delivery) => (
+            <DeliveryCard key={delivery.id} delivery={delivery} />
+          ))}
+        </div>
+      )}
+
+      {pastDeliveries.length > 0 && (
+        <div className="mt-10">
+          <h2 className="mb-3 font-semibold text-gray-500">Completed</h2>
+          <div className="space-y-2">
+            {pastDeliveries.map((delivery) => (
+              <div key={delivery.id} className="rounded border p-3 text-sm text-gray-500">
+                {delivery.order?.recipient_name} — {delivery.order?.status}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </main>
+  )
+}

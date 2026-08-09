@@ -92,11 +92,8 @@ export function roleHome(role: Role | null | undefined) {
   switch (role) {
     case 'merchant':
       return '/dashboard'
-    // (driver)/driver/page.tsx is still an empty stub (not built yet, see
-    // roadmap item 3) - routing there would error. Send drivers home until
-    // that page exists, then switch this back to '/driver'.
     case 'driver':
-      return '/'
+      return '/driver'
     case 'customer':
     default:
       return '/shop'
