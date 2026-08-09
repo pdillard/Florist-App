@@ -67,6 +67,34 @@ yet. See `sql/012_merchant_signup_and_driver_invites.sql` and `sql/014_invite_co
    copy its signing secret into `STRIPE_WEBHOOK_SECRET`.
 5. Deploy. Every `git push` to the connected branch redeploys automatically after this.
 
+## Before going live
+
+Everything above works today with zero external accounts beyond Supabase: signup/login, merchant
+order entry, driver assignment and delivery, photo proof, and customer tracking are all fully
+functional with no Stripe, Twilio, business registration, or domain required. What's actually
+gated on those things, and what's not:
+
+- **A domain is not required to deploy or test.** Vercel gives every project a free
+  `<project>.vercel.app` URL the moment you deploy - `NEXT_PUBLIC_SITE_URL` can point at that.
+  Buying a real domain later is a DNS change in Vercel plus updating that one env var, no code
+  changes.
+- **Stripe test mode needs an account, not a registered business.** Signing up for Stripe gives
+  you test-mode API keys immediately - no EIN, no business verification, no bank account. That's
+  enough to build and fully exercise the payment-link → webhook → order-marked-paid flow end to
+  end before anything is real. (Flagging this in case it changes the order you want to do things
+  in - happy to leave it alone if you'd rather wait regardless.)
+- **Business registration and bank details are only needed to activate Stripe for live payouts** -
+  i.e. to actually receive real money. Stripe asks for legal business info (an EIN/SSN depending
+  on entity type), a bank account, and typically a business URL at that point. This is the actual
+  gate on charging real customers, not on writing or testing the code.
+- **Twilio** similarly just needs an account and a phone number, no business registration, to test
+  SMS in a trial account (trial accounts can only text verified numbers until upgraded).
+- **Re-enable email confirmation** in Supabase Auth before any real signups - it's off right now
+  for testing convenience (see Known limitations above).
+
+Net: nothing in the current build is blocked on the business/domain side. When you're ready,
+swapping in real Stripe/Twilio keys and a domain is a config change, not a code change.
+
 ## Repo layout
 
 ```

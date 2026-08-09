@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { stripe } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe'
 
 // Creates a Stripe Checkout Session for one order and hands back its URL.
 // Called from the merchant dashboard's order detail page (PaymentPanel) -
@@ -45,6 +45,14 @@ export async function POST(request: NextRequest) {
 
   if (!order.total_cents || order.total_cents <= 0) {
     return NextResponse.json({ error: 'order has no total to charge' }, { status: 409 })
+  }
+
+  let stripe
+  try {
+    stripe = getStripe()
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Stripe is not configured'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? request.nextUrl.origin
