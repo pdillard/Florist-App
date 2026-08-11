@@ -12,6 +12,7 @@ export function Header() {
   const isMerchant = profile?.role === 'merchant'
   const isCustomer = profile?.role === 'customer'
   const isDriver = profile?.role === 'driver'
+  const isLoginPage = pathname === '/login'
 
   async function handleSignOut() {
     await signOut()
@@ -25,6 +26,22 @@ export function Header() {
       </Link>
 
       <div className="flex items-center gap-4">
+        {!user && !isLoginPage && (
+          <>
+            <Link href="/features" className="text-sm text-gray-700 transition-colors hover:text-black">
+              Features
+            </Link>
+            <Link href="/pricing" className="text-sm text-gray-700 transition-colors hover:text-black">
+              Pricing
+            </Link>
+            <Link
+              href="/login"
+              className="text-sm text-gray-700 underline transition-colors hover:text-black"
+            >
+              Sign in
+            </Link>
+          </>
+        )}
         {isMerchant && pathname !== '/dashboard' && (
           <Link href="/dashboard" className="text-sm text-gray-700 underline transition-colors hover:text-black">
             Dashboard
