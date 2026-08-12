@@ -5,6 +5,7 @@ import { Camera, MessageSquareWarning, Phone, Truck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { Button } from '@/components/shared/Button'
+import { ErrorMessage } from '@/components/shared/ErrorMessage'
 import { INPUT_STYLES } from '@/lib/ui'
 
 type Order = {
@@ -156,7 +157,11 @@ export function DeliveryCard({ delivery }: { delivery: Delivery }) {
         <StatusBadge status={status} />
       </div>
 
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && (
+        <div className="mt-2">
+          <ErrorMessage>{error}</ErrorMessage>
+        </div>
+      )}
 
       <div className="mt-3 flex flex-wrap items-center gap-3">
         {status === 'assigned' && (

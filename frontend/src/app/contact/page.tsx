@@ -4,7 +4,7 @@ import { Mail } from 'lucide-react'
 import { Reveal } from '@/components/marketing/Reveal'
 
 export const metadata: Metadata = {
-  title: 'Contact — Florist Delivery Platform',
+  title: 'Contact',
   description: 'Get in touch about setting up delivery, tracking, and proof of delivery for your shop.',
 }
 

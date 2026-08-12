@@ -13,7 +13,7 @@ import { Button } from '@/components/shared/Button'
 import { Reveal } from '@/components/marketing/Reveal'
 
 export const metadata: Metadata = {
-  title: 'Features — Florist Delivery Platform',
+  title: 'Features',
   description: 'Order entry, driver dispatch, live tracking, and photo/GPS proof of delivery for local florists.',
 }
 

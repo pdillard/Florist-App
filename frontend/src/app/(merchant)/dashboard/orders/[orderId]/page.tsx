@@ -1,5 +1,6 @@
 import { redirect, notFound } from 'next/navigation'
-import { MapPin, Package } from 'lucide-react'
+import Link from 'next/link'
+import { ArrowLeft, MapPin, Package } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { MerchantNav } from '@/components/dashboard/MerchantNav'
 import { OrderStatusPanel } from '@/components/dashboard/OrderStatusPanel'
@@ -94,6 +95,14 @@ export default async function OrderDetailPage({
   return (
     <main className="p-8">
       <MerchantNav />
+
+      <Link
+        href="/dashboard"
+        className="mb-4 inline-flex items-center gap-1.5 text-sm text-gray-500 transition-colors hover:text-rose-600"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" />
+        Back to orders
+      </Link>
 
       <div className="mb-6 flex items-start justify-between gap-4">
         <h1 className="text-2xl font-bold">{order.recipient_name ?? 'Order'}</h1>

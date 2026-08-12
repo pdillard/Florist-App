@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { PackageSearch } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { EmptyState } from '@/components/shared/EmptyState'
 
 // There's no self-serve storefront in this app - orders come from a shop
 // entering them directly (merchant_create_order, sql/007). A customer
@@ -33,7 +35,11 @@ export default async function OrdersPage() {
       <h1 className="text-2xl font-bold mb-6">Your orders</h1>
 
       {!orders || orders.length === 0 ? (
-        <p className="text-gray-500">No orders yet.</p>
+        <EmptyState
+          icon={PackageSearch}
+          title="No orders yet"
+          description="Once a shop enters an order under your account, it'll show up here with a live tracking link."
+        />
       ) : (
         <div className="space-y-3">
           {orders.map((order) => (

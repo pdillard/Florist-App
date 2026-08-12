@@ -1,11 +1,12 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Plus } from 'lucide-react'
+import { ClipboardList, Plus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { AssignDriverControl } from '@/components/dashboard/AssignDriverControl'
 import { MerchantNav } from '@/components/dashboard/MerchantNav'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { Button } from '@/components/shared/Button'
+import { EmptyState } from '@/components/shared/EmptyState'
 
 // See the comment in (driver)/driver/page.tsx: without generated Supabase
 // types, many-to-one embeds are inferred as arrays. These describe the
@@ -95,10 +96,20 @@ export default async function DashboardPage() {
       </div>
 
       {orders.length === 0 ? (
-        <p className="text-gray-500">No orders yet.</p>
+        <EmptyState
+          icon={ClipboardList}
+          title="No orders yet"
+          description="Orders you enter will show up here so you can track status, payment, and driver assignment."
+          action={
+            <Button href="/dashboard/new-order">
+              <Plus className="h-4 w-4" />
+              New order
+            </Button>
+          }
+        />
       ) : (
-        <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
-          <table className="w-full border-collapse">
+        <div className="overflow-x-auto rounded-xl border bg-white shadow-sm">
+          <table className="w-full min-w-[720px] border-collapse">
             <thead>
               <tr className="border-b bg-gray-50 text-left text-sm text-gray-500">
                 <th className="px-4 py-2.5">Recipient</th>

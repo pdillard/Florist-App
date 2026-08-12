@@ -5,10 +5,26 @@ import { AuthProvider } from "@/lib/auth/AuthContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 
+const description =
+  "Local delivery, live tracking, and photo proof of delivery for florists - the add-on that sits next to the POS you already use.";
+
 export const metadata: Metadata = {
-  title: "Florist Delivery Platform",
-  description:
-    "Local delivery, live tracking, and photo proof of delivery for florists - the add-on that sits next to the POS you already use.",
+  title: {
+    default: "Florist Delivery Platform",
+    template: "%s — Florist Delivery Platform",
+  },
+  description,
+  themeColor: "#e11d48",
+  openGraph: {
+    title: "Florist Delivery Platform",
+    description,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Florist Delivery Platform",
+    description,
+  },
 };
 
 export default function RootLayout({

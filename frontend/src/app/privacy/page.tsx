@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy — Florist Delivery Platform',
+  title: 'Privacy Policy',
 }
 
 const LAST_UPDATED = 'August 10, 2026'

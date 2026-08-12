@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { CheckCircle2, PackagePlus, Trash2, Truck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/shared/Button'
+import { ErrorMessage } from '@/components/shared/ErrorMessage'
+import { EmptyState } from '@/components/shared/EmptyState'
 import { INPUT_STYLES } from '@/lib/ui'
 
 type Product = {
@@ -131,7 +133,18 @@ export function NewOrderForm({ products }: { products: Product[] }) {
   }
 
   if (products.length === 0) {
-    return <p className="text-gray-500">No active products in your catalog yet.</p>
+    return (
+      <EmptyState
+        icon={PackagePlus}
+        title="No active products in your catalog yet"
+        description="Add your flowers and arrangements to Inventory first, then come back here to enter an order."
+        action={
+          <Button href="/dashboard/inventory" variant="secondary">
+            Go to Inventory
+          </Button>
+        }
+      />
+    )
   }
 
   return (
@@ -183,6 +196,7 @@ export function NewOrderForm({ products }: { products: Product[] }) {
                   <button
                     type="button"
                     onClick={() => removeItem(item.productId)}
+                    aria-label={`Remove ${item.name} from order`}
                     className="flex items-center gap-1 text-red-600 transition-colors hover:text-red-800"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -252,7 +266,7 @@ export function NewOrderForm({ products }: { products: Product[] }) {
         </div>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button type="submit" variant="accent" loading={submitting} className="w-full py-2.5">
         Place order

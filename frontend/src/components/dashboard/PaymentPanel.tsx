@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Check, Copy, Link2, Wallet } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/shared/Button'
+import { ErrorMessage } from '@/components/shared/ErrorMessage'
 
 export function PaymentPanel({
   orderId,
@@ -141,7 +142,11 @@ export function PaymentPanel({
         </div>
       )}
 
-      {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+      {error && (
+        <div className="mt-2">
+          <ErrorMessage>{error}</ErrorMessage>
+        </div>
+      )}
     </div>
   )
 }

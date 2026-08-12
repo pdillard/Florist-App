@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth, roleHome } from '@/lib/auth/AuthContext'
 import { Button } from '@/components/shared/Button'
+import { ErrorMessage } from '@/components/shared/ErrorMessage'
 
 const INPUT_STYLES =
   'w-full rounded-lg border border-gray-300 p-2.5 text-sm transition-all duration-150 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100'
@@ -181,7 +182,7 @@ export default function LoginPage() {
           </div>
         )}
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button type="submit" variant="accent" loading={loading} className="w-full py-2.5">
           {mode === 'signin' ? 'Sign in' : 'Sign up'}

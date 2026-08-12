@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { AlertTriangle, Check, PackagePlus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/shared/Button'
+import { ErrorMessage } from '@/components/shared/ErrorMessage'
+import { EmptyState } from '@/components/shared/EmptyState'
 import { INPUT_STYLES } from '@/lib/ui'
 import { BulkImportProducts } from '@/components/dashboard/BulkImportProducts'
 
@@ -135,7 +137,7 @@ export function InventoryManager({
             onChange={(e) => setStockQty(e.target.value)}
           />
         </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        <ErrorMessage>{error}</ErrorMessage>
         <Button type="submit" loading={submitting} className="w-full">
           Add product
         </Button>
@@ -152,7 +154,11 @@ export function InventoryManager({
           )}
         </div>
         {products.length === 0 ? (
-          <p className="text-gray-500">No products yet.</p>
+          <EmptyState
+            icon={PackagePlus}
+            title="No products yet"
+            description="Add one above, or import your whole catalog from a spreadsheet."
+          />
         ) : (
           <div className="space-y-2">
             {products.map((p) => (

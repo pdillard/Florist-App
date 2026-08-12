@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation'
+import { PartyPopper } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { DeliveryCard } from '@/components/driver/DeliveryCard'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { EmptyState } from '@/components/shared/EmptyState'
 
 // Without generated Supabase types, the client can't tell that
 // order:orders(...) is a many-to-one embed (one order per delivery) and
@@ -70,7 +72,11 @@ export default async function DriverPage() {
       <p className="text-gray-500 mb-6">Welcome, {profile.name}</p>
 
       {activeDeliveries.length === 0 ? (
-        <p className="text-gray-500">No active deliveries right now.</p>
+        <EmptyState
+          icon={PartyPopper}
+          title="You're all caught up"
+          description="No active deliveries right now - new assignments will show up here."
+        />
       ) : (
         <div className="space-y-4">
           {activeDeliveries.map((delivery) => (

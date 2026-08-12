@@ -1,8 +1,10 @@
 import { redirect } from 'next/navigation'
+import { Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { DriverAvailabilityToggle } from '@/components/dashboard/DriverAvailabilityToggle'
 import { DriverInviteCode } from '@/components/dashboard/DriverInviteCode'
 import { MerchantNav } from '@/components/dashboard/MerchantNav'
+import { EmptyState } from '@/components/shared/EmptyState'
 
 // See the comment in (driver)/driver/page.tsx: without generated Supabase
 // types, a many-to-one embed (driver:profiles!user_id, one profile per
@@ -64,13 +66,14 @@ export default async function DriversPage() {
       )}
 
       {!drivers || drivers.length === 0 ? (
-        <p className="text-gray-500">
-          No drivers yet. Share the invite code above and have them sign up with the driver role
-          &mdash; they will show up here.
-        </p>
+        <EmptyState
+          icon={Users}
+          title="No drivers yet"
+          description="Share the invite code above and have them sign up with the driver role — they'll show up here."
+        />
       ) : (
-        <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
-          <table className="w-full border-collapse">
+        <div className="overflow-x-auto rounded-xl border bg-white shadow-sm">
+          <table className="w-full min-w-[640px] border-collapse">
             <thead>
               <tr className="border-b bg-gray-50 text-left text-sm text-gray-500">
                 <th className="px-4 py-2.5">Name</th>
