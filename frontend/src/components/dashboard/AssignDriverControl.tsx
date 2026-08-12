@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/shared/Button'
+import { INPUT_STYLES } from '@/lib/ui'
 
 type Driver = {
   id: string
@@ -59,7 +60,7 @@ export function AssignDriverControl({
       <select
         value={driverId}
         onChange={(e) => setDriverId(e.target.value)}
-        className="rounded border px-2 py-1 text-sm"
+        className={`${INPUT_STYLES} py-1.5 text-xs`}
       >
         {drivers.map((d) => (
           <option key={d.id} value={d.id}>
@@ -67,7 +68,7 @@ export function AssignDriverControl({
           </option>
         ))}
       </select>
-      <Button onClick={handleAssign} loading={submitting} className="px-2 py-1 text-xs">
+      <Button onClick={handleAssign} loading={submitting} className="px-2.5 py-1 text-xs">
         Assign
       </Button>
       {error && <span className="text-xs text-red-600">{error}</span>}

@@ -5,9 +5,24 @@
   --foreground: #171717;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+::selection {
+  background-color: #fecdd3; /* rose-200 */
+  color: #171717;
+}
+
+/* nextjs-toploader renders its own bar/spinner; this just softens the
+   glow so it reads as polish rather than a stray line across the page. */
+#nprogress .bar {
+  box-shadow: 0 0 10px #e11d48, 0 0 5px #e11d48;
 }
 
 /* A moving gradient reads as "actively loading" much more than a flat

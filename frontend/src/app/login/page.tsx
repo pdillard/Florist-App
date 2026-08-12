@@ -6,6 +6,9 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuth, roleHome } from '@/lib/auth/AuthContext'
 import { Button } from '@/components/shared/Button'
 
+const INPUT_STYLES =
+  'w-full rounded-lg border border-gray-300 p-2.5 text-sm transition-all duration-150 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100'
+
 export default function LoginPage() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
   const [email, setEmail] = useState('')
@@ -97,19 +100,24 @@ export default function LoginPage() {
   }
 
   if (authLoading || user) {
-    return <main className="p-8">Redirecting...</main>
+    return <main className="flex min-h-[70vh] items-center justify-center p-8 text-gray-500">Redirecting...</main>
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-8">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
+    <main className="relative flex min-h-[85vh] items-center justify-center overflow-hidden p-8">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-rose-50/60 to-white" />
+
+      <form
+        onSubmit={handleSubmit}
+        className="relative w-full max-w-sm space-y-4 rounded-2xl border bg-white p-8 shadow-xl shadow-rose-100/60"
+      >
         <h1 className="text-2xl font-bold">
-          {mode === 'signin' ? 'Sign in' : 'Create an account'}
+          {mode === 'signin' ? 'Welcome back' : 'Create an account'}
         </h1>
 
         {mode === 'signup' && (
           <input
-            className="w-full rounded border p-2"
+            className={INPUT_STYLES}
             placeholder="Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -118,7 +126,7 @@ export default function LoginPage() {
         )}
 
         <input
-          className="w-full rounded border p-2"
+          className={INPUT_STYLES}
           type="email"
           placeholder="Email"
           value={email}
@@ -127,7 +135,7 @@ export default function LoginPage() {
         />
 
         <input
-          className="w-full rounded border p-2"
+          className={INPUT_STYLES}
           type="password"
           placeholder="Password"
           value={password}
@@ -138,7 +146,7 @@ export default function LoginPage() {
 
         {mode === 'signup' && (
           <select
-            className="w-full rounded border p-2"
+            className={INPUT_STYLES}
             value={role}
             onChange={(e) => setRole(e.target.value as typeof role)}
           >
@@ -150,7 +158,7 @@ export default function LoginPage() {
 
         {mode === 'signup' && role === 'merchant' && (
           <input
-            className="w-full rounded border p-2"
+            className={INPUT_STYLES}
             placeholder="Shop name"
             value={shopName}
             onChange={(e) => setShopName(e.target.value)}
@@ -161,7 +169,7 @@ export default function LoginPage() {
         {mode === 'signup' && role === 'driver' && (
           <div>
             <input
-              className="w-full rounded border p-2 uppercase"
+              className={`${INPUT_STYLES} uppercase`}
               placeholder="Shop invite code"
               value={inviteCode}
               onChange={(e) => setInviteCode(e.target.value)}
@@ -175,14 +183,14 @@ export default function LoginPage() {
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
-        <Button type="submit" loading={loading} className="w-full p-2">
+        <Button type="submit" variant="accent" loading={loading} className="w-full py-2.5">
           {mode === 'signin' ? 'Sign in' : 'Sign up'}
         </Button>
 
         <button
           type="button"
           onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
-          className="w-full text-sm text-gray-500 underline transition-colors hover:text-gray-700"
+          className="w-full text-sm text-gray-500 underline decoration-gray-300 underline-offset-2 transition-colors hover:text-black hover:decoration-black"
         >
           {mode === 'signin' ? 'Need an account? Sign up' : 'Already have an account? Sign in'}
         </button>

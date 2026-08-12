@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import { Camera, MessageSquareWarning, Phone, Truck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { Button } from '@/components/shared/Button'
+import { INPUT_STYLES } from '@/lib/ui'
 
 type Order = {
   id: string
@@ -18,6 +20,14 @@ type Delivery = {
   id: string
   order_id: string
   order: Order | null
+}
+
+// A colored left edge per status - a driver scanning a list of cards on
+// their phone can tell "needs action" from "already moving" at a glance,
+// without reading every badge.
+const STATUS_ACCENT: Record<string, string> = {
+  assigned: 'border-l-indigo-500',
+  out_for_delivery: 'border-l-purple-500',
 }
 
 export function DeliveryCard({ delivery }: { delivery: Delivery }) {
@@ -121,13 +131,23 @@ export function DeliveryCard({ delivery }: { delivery: Delivery }) {
   }
 
   return (
-    <div className="rounded-lg border p-4">
-      <div className="flex items-start justify-between">
+    <div
+      className={`rounded-xl border border-l-4 bg-white p-4 shadow-sm transition-shadow duration-200 hover:shadow-md ${
+        STATUS_ACCENT[status] ?? 'border-l-gray-200'
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-semibold">{order.recipient_name ?? '—'}</p>
-          <p className="text-sm text-gray-500">{order.delivery_address}</p>
+          <p className="mt-0.5 text-sm text-gray-500">{order.delivery_address}</p>
           {order.recipient_phone && (
-            <p className="text-sm text-gray-500">{order.recipient_phone}</p>
+            <a
+              href={`tel:${order.recipient_phone}`}
+              className="mt-0.5 flex items-center gap-1 text-sm text-gray-500 hover:text-rose-600"
+            >
+              <Phone className="h-3.5 w-3.5" />
+              {order.recipient_phone}
+            </a>
           )}
           {order.card_message && (
             <p className="mt-1 text-sm italic text-gray-600">&quot;{order.card_message}&quot;</p>
@@ -141,13 +161,15 @@ export function DeliveryCard({ delivery }: { delivery: Delivery }) {
       <div className="mt-3 flex flex-wrap items-center gap-3">
         {status === 'assigned' && (
           <Button onClick={handleStartDelivery} loading={submitting}>
+            <Truck className="h-4 w-4" />
             Start delivery
           </Button>
         )}
 
         {status === 'out_for_delivery' && (
           <>
-            <label className="cursor-pointer rounded border px-3 py-1.5 text-sm transition-all duration-150 ease-out hover:bg-gray-50 active:scale-[0.97]">
+            <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-gray-400 hover:bg-gray-50 hover:shadow-md active:translate-y-0 active:scale-[0.97]">
+              <Camera className="h-4 w-4" />
               {submitting ? 'Uploading...' : 'Upload proof photo'}
               <input
                 type="file"
@@ -160,14 +182,15 @@ export function DeliveryCard({ delivery }: { delivery: Delivery }) {
             {!showFailureInput ? (
               <button
                 onClick={() => setShowFailureInput(true)}
-                className="text-sm text-red-600 underline transition-colors hover:text-red-800"
+                className="inline-flex items-center gap-1.5 text-sm text-red-600 underline decoration-red-200 underline-offset-2 transition-colors hover:text-red-800 hover:decoration-red-800"
               >
+                <MessageSquareWarning className="h-3.5 w-3.5" />
                 Report failed delivery
               </button>
             ) : (
               <div className="flex items-center gap-2">
                 <input
-                  className="rounded border p-1.5 text-sm"
+                  className={INPUT_STYLES}
                   placeholder="Reason"
                   value={failureReason}
                   onChange={(e) => setFailureReason(e.target.value)}

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import NextTopLoader from "nextjs-toploader";
 import { AuthProvider } from "@/lib/auth/AuthContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -16,6 +17,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        {/* Every route change (Link clicks, router.push) gets a visible
+            progress bar at the top instead of the page just snapping to
+            the next thing - the "is this actually loading" cue most
+            polished sites have and this one didn't. */}
+        <NextTopLoader color="#e11d48" height={3} showSpinner={false} />
         <AuthProvider>
           <div className="flex min-h-screen flex-col">
             <Header />

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/shared/Button'
 
 export function CancelOrderButton({ orderId }: { orderId: string }) {
   const [submitting, setSubmitting] = useState(false)
@@ -33,13 +34,9 @@ export function CancelOrderButton({ orderId }: { orderId: string }) {
 
   return (
     <div>
-      <button
-        onClick={handleCancel}
-        disabled={submitting}
-        className="rounded border border-red-600 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
-      >
+      <Button variant="danger" onClick={handleCancel} loading={submitting}>
         Cancel order
-      </button>
+      </Button>
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   )

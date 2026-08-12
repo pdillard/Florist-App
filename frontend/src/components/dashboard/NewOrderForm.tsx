@@ -2,8 +2,10 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { CheckCircle2, PackagePlus, Trash2, Truck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/shared/Button'
+import { INPUT_STYLES } from '@/lib/ui'
 
 type Product = {
   id: string
@@ -112,13 +114,15 @@ export function NewOrderForm({ products }: { products: Product[] }) {
 
   if (placedOrderId) {
     return (
-      <div>
-        <p className="mb-4">Order placed. Order ID: {placedOrderId}</p>
-        <div className="flex gap-4">
-          <Button onClick={handleNewOrder} className="px-4 py-2">
-            Enter another order
-          </Button>
-          <Button variant="secondary" onClick={() => router.push('/dashboard')} className="px-4 py-2">
+      <div className="max-w-lg rounded-xl border bg-white p-6 shadow-sm">
+        <div className="flex items-center gap-2 text-emerald-600">
+          <CheckCircle2 className="h-5 w-5" />
+          <p className="font-semibold">Order placed</p>
+        </div>
+        <p className="mt-1 text-sm text-gray-500">Order ID: {placedOrderId}</p>
+        <div className="mt-4 flex gap-3">
+          <Button onClick={handleNewOrder}>Enter another order</Button>
+          <Button variant="secondary" onClick={() => router.push('/dashboard')}>
             Back to dashboard
           </Button>
         </div>
@@ -132,14 +136,17 @@ export function NewOrderForm({ products }: { products: Product[] }) {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-lg space-y-6">
-      <div>
-        <h2 className="font-semibold mb-2">Items</h2>
+      <div className="rounded-xl border bg-white p-5 shadow-sm">
+        <h2 className="mb-2 flex items-center gap-1.5 font-semibold">
+          <PackagePlus className="h-4 w-4 text-rose-500" />
+          Items
+        </h2>
 
         <div className="mb-3 flex items-end gap-2">
           <select
             value={pickerProductId}
             onChange={(e) => setPickerProductId(e.target.value)}
-            className="flex-1 rounded border p-2"
+            className={`flex-1 ${INPUT_STYLES}`}
           >
             {products.map((p) => (
               <option key={p.id} value={p.id}>
@@ -152,9 +159,9 @@ export function NewOrderForm({ products }: { products: Product[] }) {
             min={1}
             value={pickerQty}
             onChange={(e) => setPickerQty(Number(e.target.value))}
-            className="w-20 rounded border p-2"
+            className={`w-20 ${INPUT_STYLES}`}
           />
-          <Button type="button" variant="secondary" onClick={addItem} className="px-3 py-2">
+          <Button type="button" variant="secondary" onClick={addItem}>
             Add
           </Button>
         </div>
@@ -166,7 +173,7 @@ export function NewOrderForm({ products }: { products: Product[] }) {
             {items.map((item) => (
               <div
                 key={item.productId}
-                className="flex items-center justify-between rounded border p-2 text-sm"
+                className="flex items-center justify-between rounded-lg border bg-gray-50 p-2.5 text-sm"
               >
                 <span>
                   {item.qty} x {item.name}
@@ -176,9 +183,9 @@ export function NewOrderForm({ products }: { products: Product[] }) {
                   <button
                     type="button"
                     onClick={() => removeItem(item.productId)}
-                    className="text-red-600 underline transition-colors hover:text-red-800"
+                    className="flex items-center gap-1 text-red-600 transition-colors hover:text-red-800"
                   >
-                    Remove
+                    <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
               </div>
@@ -190,31 +197,34 @@ export function NewOrderForm({ products }: { products: Product[] }) {
         )}
       </div>
 
-      <div className="space-y-3">
-        <h2 className="font-semibold">Delivery details</h2>
+      <div className="space-y-3 rounded-xl border bg-white p-5 shadow-sm">
+        <h2 className="flex items-center gap-1.5 font-semibold">
+          <Truck className="h-4 w-4 text-rose-500" />
+          Delivery details
+        </h2>
         <input
-          className="w-full rounded border p-2"
+          className={`w-full ${INPUT_STYLES}`}
           placeholder="Recipient name"
           value={recipientName}
           onChange={(e) => setRecipientName(e.target.value)}
           required
         />
         <input
-          className="w-full rounded border p-2"
+          className={`w-full ${INPUT_STYLES}`}
           placeholder="Recipient phone"
           value={recipientPhone}
           onChange={(e) => setRecipientPhone(e.target.value)}
           required
         />
         <input
-          className="w-full rounded border p-2"
+          className={`w-full ${INPUT_STYLES}`}
           placeholder="Delivery address"
           value={deliveryAddress}
           onChange={(e) => setDeliveryAddress(e.target.value)}
           required
         />
         <textarea
-          className="w-full rounded border p-2"
+          className={`w-full ${INPUT_STYLES}`}
           placeholder="Card message (optional)"
           value={cardMessage}
           onChange={(e) => setCardMessage(e.target.value)}
@@ -225,7 +235,7 @@ export function NewOrderForm({ products }: { products: Product[] }) {
             Delivery window start (optional)
             <input
               type="datetime-local"
-              className="mt-1 w-full rounded border p-2"
+              className={`mt-1 w-full ${INPUT_STYLES}`}
               value={windowStart}
               onChange={(e) => setWindowStart(e.target.value)}
             />
@@ -234,7 +244,7 @@ export function NewOrderForm({ products }: { products: Product[] }) {
             Delivery window end (optional)
             <input
               type="datetime-local"
-              className="mt-1 w-full rounded border p-2"
+              className={`mt-1 w-full ${INPUT_STYLES}`}
               value={windowEnd}
               onChange={(e) => setWindowEnd(e.target.value)}
             />
@@ -244,7 +254,7 @@ export function NewOrderForm({ products }: { products: Product[] }) {
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <Button type="submit" loading={submitting} className="w-full p-2">
+      <Button type="submit" variant="accent" loading={submitting} className="w-full py-2.5">
         Place order
       </Button>
     </form>

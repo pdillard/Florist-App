@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Check, Copy, KeyRound, RefreshCw } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/shared/Button'
 
@@ -61,18 +62,21 @@ export function DriverInviteCode({
   }
 
   return (
-    <div className="mb-6 rounded border bg-gray-50 p-4">
-      <p className="text-sm text-gray-600">
+    <div className="mb-6 rounded-xl border bg-gray-50 p-4 shadow-sm">
+      <p className="flex items-center gap-1.5 text-sm text-gray-600">
+        <KeyRound className="h-3.5 w-3.5 shrink-0 text-rose-500" />
         Drivers sign up with this code to join your shop &mdash; share it directly, don&apos;t post it publicly.
       </p>
-      <div className="mt-2 flex items-center gap-2">
-        <code className="rounded border bg-white px-3 py-1.5 font-mono text-lg tracking-wider">
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <code className="rounded-lg border bg-white px-3 py-1.5 font-mono text-lg tracking-wider">
           {inviteCode}
         </code>
         <Button variant="secondary" onClick={copy} type="button">
+          {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
           {copied ? 'Copied' : 'Copy'}
         </Button>
         <Button variant="ghost" onClick={regenerate} loading={regenerating} type="button">
+          <RefreshCw className="h-3.5 w-3.5" />
           Regenerate
         </Button>
         <span className={`text-xs ${expiry.urgent ? 'font-medium text-red-600' : 'text-gray-500'}`}>

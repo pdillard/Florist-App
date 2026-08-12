@@ -69,30 +69,32 @@ export default async function DriversPage() {
           &mdash; they will show up here.
         </p>
       ) : (
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="border-b text-left text-sm text-gray-500">
-              <th className="py-2">Name</th>
-              <th>Phone</th>
-              <th>Vehicle</th>
-              <th>License plate</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {drivers.map((d) => (
-              <tr key={d.user_id} className="border-b">
-                <td className="py-2">{d.driver?.name ?? 'Unnamed driver'}</td>
-                <td>{d.driver?.phone ?? '—'}</td>
-                <td>{d.vehicle_type ?? '—'}</td>
-                <td>{d.license_plate ?? '—'}</td>
-                <td>
-                  <DriverAvailabilityToggle userId={d.user_id} isAvailable={d.is_available} />
-                </td>
+        <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b bg-gray-50 text-left text-sm text-gray-500">
+                <th className="px-4 py-2.5">Name</th>
+                <th>Phone</th>
+                <th>Vehicle</th>
+                <th>License plate</th>
+                <th>Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {drivers.map((d) => (
+                <tr key={d.user_id} className="border-b transition-colors last:border-b-0 hover:bg-rose-50/40">
+                  <td className="px-4 py-2.5 font-medium text-gray-900">{d.driver?.name ?? 'Unnamed driver'}</td>
+                  <td>{d.driver?.phone ?? '—'}</td>
+                  <td>{d.vehicle_type ?? '—'}</td>
+                  <td>{d.license_plate ?? '—'}</td>
+                  <td className="px-4">
+                    <DriverAvailabilityToggle userId={d.user_id} isAvailable={d.is_available} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </main>
   )

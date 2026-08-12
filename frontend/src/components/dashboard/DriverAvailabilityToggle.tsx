@@ -38,8 +38,8 @@ export function DriverAvailabilityToggle({
     <button
       onClick={toggle}
       disabled={submitting}
-      className={`rounded px-2 py-1 text-xs transition-all duration-150 ease-out active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 ${
-        isAvailable ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+      className={`rounded-full px-2.5 py-1 text-xs font-medium shadow-sm transition-all duration-150 ease-out hover:-translate-y-0.5 hover:shadow active:translate-y-0 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 ${
+        isAvailable ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
       }`}
     >
       {isAvailable ? 'Available' : 'Unavailable'}

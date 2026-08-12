@@ -1,8 +1,10 @@
 import { redirect, notFound } from 'next/navigation'
+import { MapPin, Package } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { MerchantNav } from '@/components/dashboard/MerchantNav'
 import { OrderStatusPanel } from '@/components/dashboard/OrderStatusPanel'
 import { PaymentPanel } from '@/components/dashboard/PaymentPanel'
+import { OrderProgress } from '@/components/shared/OrderProgress'
 
 // See the comment in (driver)/driver/page.tsx: without generated Supabase
 // types, many-to-one embeds are inferred as arrays. These describe the
@@ -93,9 +95,16 @@ export default async function OrderDetailPage({
     <main className="p-8">
       <MerchantNav />
 
-      <div className="mb-6 space-y-3">
-        <h1 className="mb-2 text-2xl font-bold">{order.recipient_name ?? 'Order'}</h1>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <h1 className="text-2xl font-bold">{order.recipient_name ?? 'Order'}</h1>
         <OrderStatusPanel orderId={order.id} initialStatus={order.status} />
+      </div>
+
+      <div className="mb-6 rounded-xl border bg-white p-5 shadow-sm">
+        <OrderProgress status={order.status} />
+      </div>
+
+      <div className="mb-6">
         <PaymentPanel
           orderId={order.id}
           initialPaymentStatus={order.payment_status}
@@ -104,8 +113,11 @@ export default async function OrderDetailPage({
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <div className="rounded-lg border p-4">
-          <h2 className="mb-2 font-semibold">Delivery</h2>
+        <div className="rounded-xl border bg-white p-5 shadow-sm">
+          <h2 className="mb-2 flex items-center gap-1.5 font-semibold">
+            <MapPin className="h-4 w-4 text-rose-500" />
+            Delivery
+          </h2>
           <p className="text-sm">{order.delivery_address}</p>
           {order.recipient_phone && (
             <p className="text-sm text-gray-500">{order.recipient_phone}</p>
@@ -130,8 +142,11 @@ export default async function OrderDetailPage({
           )}
         </div>
 
-        <div className="rounded-lg border p-4">
-          <h2 className="mb-2 font-semibold">Items</h2>
+        <div className="rounded-xl border bg-white p-5 shadow-sm">
+          <h2 className="mb-2 flex items-center gap-1.5 font-semibold">
+            <Package className="h-4 w-4 text-rose-500" />
+            Items
+          </h2>
           <div className="space-y-1">
             {(items ?? []).map((item) => (
               <div key={item.id} className="flex justify-between text-sm">
@@ -149,15 +164,25 @@ export default async function OrderDetailPage({
         </div>
       </div>
 
-      <div className="mt-6">
-        <h2 className="mb-2 font-semibold">History</h2>
-        <div className="space-y-1 text-sm text-gray-600">
-          {(events ?? []).map((event) => (
-            <p key={event.id}>
-              {new Date(event.created_at).toLocaleString()} — {event.from_status ?? 'created'}{' '}
-              → {event.to_status}
-              {event.actor?.name && ` (${event.actor.name})`}
-            </p>
+      <div className="mt-6 rounded-xl border bg-white p-5 shadow-sm">
+        <h2 className="mb-3 font-semibold">History</h2>
+        <div className="space-y-3">
+          {(events ?? []).map((event, i) => (
+            <div key={event.id} className="flex items-start gap-3 text-sm">
+              <div className="mt-1 flex flex-col items-center self-stretch">
+                <span className="h-2 w-2 shrink-0 rounded-full bg-rose-500" />
+                {i < events.length - 1 && <span className="mt-1 w-px flex-1 bg-gray-200" />}
+              </div>
+              <p className="pb-3 text-gray-600">
+                <span className="font-medium text-gray-900">
+                  {event.from_status ?? 'created'} → {event.to_status}
+                </span>
+                <span className="block text-xs text-gray-400">
+                  {new Date(event.created_at).toLocaleString()}
+                  {event.actor?.name && ` · ${event.actor.name}`}
+                </span>
+              </p>
+            </div>
           ))}
         </div>
       </div>

@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { AlertTriangle, Check, PackagePlus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/shared/Button'
+import { INPUT_STYLES } from '@/lib/ui'
 
 type Product = {
   id: string
@@ -86,29 +88,32 @@ export function InventoryManager({
 
   return (
     <div className="space-y-8">
-      <form onSubmit={handleAddProduct} className="max-w-md space-y-3 rounded-lg border p-4">
-        <h2 className="font-semibold">Add product</h2>
+      <form onSubmit={handleAddProduct} className="max-w-md space-y-3 rounded-xl border bg-white p-5 shadow-sm">
+        <h2 className="flex items-center gap-1.5 font-semibold">
+          <PackagePlus className="h-4 w-4 text-rose-500" />
+          Add product
+        </h2>
         <input
-          className="w-full rounded border p-2"
+          className={`w-full ${INPUT_STYLES}`}
           placeholder="Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
         <textarea
-          className="w-full rounded border p-2"
+          className={`w-full ${INPUT_STYLES}`}
           placeholder="Description (optional)"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
         <div className="flex gap-3">
           <input
-            className="w-full rounded border p-2"
+            className={`w-full ${INPUT_STYLES}`}
             placeholder="Price (dollars)"
             value={priceDollars}
             onChange={(e) => setPriceDollars(e.target.value)}
           />
           <input
-            className="w-full rounded border p-2"
+            className={`w-full ${INPUT_STYLES}`}
             placeholder="Stock"
             type="number"
             min={0}
@@ -117,7 +122,7 @@ export function InventoryManager({
           />
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}
-        <Button type="submit" loading={submitting} className="px-4 py-2">
+        <Button type="submit" loading={submitting} className="w-full">
           Add product
         </Button>
       </form>
@@ -126,7 +131,8 @@ export function InventoryManager({
         <div className="mb-3 flex items-center gap-3">
           <h2 className="font-semibold">Catalog</h2>
           {lowStockCount > 0 && (
-            <span className="rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800">
+            <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800">
+              <AlertTriangle className="h-3 w-3" />
               {lowStockCount} low on stock
             </span>
           )}
@@ -197,15 +203,15 @@ function ProductRow({
 
   return (
     <div
-      className={`flex flex-wrap items-center gap-3 rounded border p-3 text-sm ${
-        isLowStock ? 'border-yellow-400 bg-yellow-50' : ''
+      className={`flex flex-wrap items-center gap-3 rounded-xl border p-3 text-sm shadow-sm transition-colors duration-150 ${
+        isLowStock ? 'border-yellow-300 bg-yellow-50' : 'bg-white'
       }`}
     >
       <span className="min-w-[10rem] font-medium">{product.name}</span>
       <label className="flex items-center gap-1 text-gray-500">
         $
         <input
-          className="w-20 rounded border p-1"
+          className={`w-20 ${INPUT_STYLES} py-1`}
           value={priceDollars}
           onChange={(e) => setPriceDollars(e.target.value)}
         />
@@ -215,13 +221,14 @@ function ProductRow({
         <input
           type="number"
           min={0}
-          className="w-20 rounded border p-1"
+          className={`w-20 ${INPUT_STYLES} py-1`}
           value={stockQty}
           onChange={(e) => setStockQty(e.target.value)}
         />
       </label>
       {isLowStock && (
-        <span className="rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800">
+        <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800">
+          <AlertTriangle className="h-3 w-3" />
           Low stock
         </span>
       )}
@@ -230,6 +237,7 @@ function ProductRow({
         Active
       </label>
       <Button onClick={handleSave} loading={submitting} className="px-3 py-1 text-xs">
+        {saved && <Check className="h-3 w-3" />}
         {saved ? 'Saved' : 'Save'}
       </Button>
       {error && <span className="text-xs text-red-600">{error}</span>}

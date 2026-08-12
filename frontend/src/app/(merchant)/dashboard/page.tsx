@@ -1,9 +1,11 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { Plus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { AssignDriverControl } from '@/components/dashboard/AssignDriverControl'
 import { MerchantNav } from '@/components/dashboard/MerchantNav'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { Button } from '@/components/shared/Button'
 
 // See the comment in (driver)/driver/page.tsx: without generated Supabase
 // types, many-to-one embeds are inferred as arrays. These describe the
@@ -86,66 +88,69 @@ export default async function DashboardPage() {
           <h1 className="text-2xl font-bold mb-2">Orders</h1>
           <p className="text-gray-500">Welcome, {profile.name}</p>
         </div>
-        <Link
-          href="/dashboard/new-order"
-          className="rounded bg-black px-4 py-2 text-sm text-white transition-all duration-150 ease-out hover:bg-gray-800 active:scale-[0.97]"
-        >
+        <Button href="/dashboard/new-order">
+          <Plus className="h-4 w-4" />
           New order
-        </Link>
+        </Button>
       </div>
 
       {orders.length === 0 ? (
         <p className="text-gray-500">No orders yet.</p>
       ) : (
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="border-b text-left text-sm text-gray-500">
-              <th className="py-2">Recipient</th>
-              <th>Address</th>
-              <th>Status</th>
-              <th>Payment</th>
-              <th>Total</th>
-              <th>Driver</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedOrders.map((order) => {
-              const assignedDriver = assignedDriverByOrder.get(order.id)
-              return (
-                <tr key={order.id} className="border-b transition-colors hover:bg-gray-50">
-                  <td className="py-2">
-                    <Link href={`/dashboard/orders/${order.id}`} className="hover:underline">
-                      {order.recipient_name ?? '—'}
-                    </Link>
-                  </td>
-                  <td>{order.delivery_address}</td>
-                  <td>
-                    <StatusBadge status={order.status} />
-                  </td>
-                  <td>
-                    <span
-                      className={`rounded-full px-2 py-1 text-xs font-medium ${
-                        order.payment_status === 'paid'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}
-                    >
-                      {order.payment_status === 'paid' ? 'Paid' : 'Unpaid'}
-                    </span>
-                  </td>
-                  <td>${(order.total_cents / 100).toFixed(2)}</td>
-                  <td>
-                    {assignedDriver ? (
-                      <span className="text-sm">{assignedDriver}</span>
-                    ) : (
-                      <AssignDriverControl orderId={order.id} drivers={availableDrivers} />
-                    )}
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+        <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b bg-gray-50 text-left text-sm text-gray-500">
+                <th className="px-4 py-2.5">Recipient</th>
+                <th>Address</th>
+                <th>Status</th>
+                <th>Payment</th>
+                <th>Total</th>
+                <th>Driver</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedOrders.map((order) => {
+                const assignedDriver = assignedDriverByOrder.get(order.id)
+                return (
+                  <tr key={order.id} className="border-b transition-colors last:border-b-0 hover:bg-rose-50/40">
+                    <td className="px-4 py-2.5">
+                      <Link
+                        href={`/dashboard/orders/${order.id}`}
+                        className="font-medium text-gray-900 hover:text-rose-600 hover:underline"
+                      >
+                        {order.recipient_name ?? '—'}
+                      </Link>
+                    </td>
+                    <td>{order.delivery_address}</td>
+                    <td>
+                      <StatusBadge status={order.status} />
+                    </td>
+                    <td>
+                      <span
+                        className={`rounded-full px-2 py-1 text-xs font-medium ${
+                          order.payment_status === 'paid'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}
+                      >
+                        {order.payment_status === 'paid' ? 'Paid' : 'Unpaid'}
+                      </span>
+                    </td>
+                    <td>${(order.total_cents / 100).toFixed(2)}</td>
+                    <td className="px-4">
+                      {assignedDriver ? (
+                        <span className="text-sm">{assignedDriver}</span>
+                      ) : (
+                        <AssignDriverControl orderId={order.id} drivers={availableDrivers} />
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </main>
   )

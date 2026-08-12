@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
+import { motion } from 'framer-motion'
+import { MapPin, RadioTower } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { STATUS_STYLES } from '@/components/shared/StatusBadge'
+import { OrderProgress } from '@/components/shared/OrderProgress'
 
 type Order = {
   id: string
@@ -11,16 +13,6 @@ type Order = {
   recipient_name: string | null
   delivery_address: string
   total_cents: number
-}
-
-const STATUS_LABELS: Record<string, string> = {
-  pending: 'Order received',
-  confirmed: 'Confirmed',
-  assigned: 'Driver assigned',
-  out_for_delivery: 'Out for delivery',
-  delivered: 'Delivered',
-  failed: 'Delivery failed',
-  cancelled: 'Cancelled',
 }
 
 export default function TrackOrderPage() {
@@ -113,12 +105,18 @@ export default function TrackOrderPage() {
   }, [orderId])
 
   if (loading) {
-    return <main className="p-8">Loading...</main>
+    return (
+      <main className="mx-auto max-w-lg px-8 py-20">
+        <div className="skeleton h-6 w-48 rounded" />
+        <div className="skeleton mt-3 h-4 w-64 rounded" />
+        <div className="skeleton mt-8 h-32 rounded-2xl" />
+      </main>
+    )
   }
 
   if (error || !order) {
     return (
-      <main className="p-8">
+      <main className="mx-auto max-w-lg px-8 py-20 text-center">
         <p className="text-red-600">
           {error ?? 'Order not found, or you do not have access to view it.'}
         </p>
@@ -127,30 +125,40 @@ export default function TrackOrderPage() {
   }
 
   return (
-    <main className="p-8">
-      <h1 className="text-2xl font-bold mb-2">Track your order</h1>
-      <p className="mb-6 text-gray-500">
-        {order.recipient_name} — {order.delivery_address}
-      </p>
-
-      <div
-        className={`rounded-lg border p-6 ${
-          (STATUS_STYLES[order.status] ?? '').split(' ')[0]
-        }`}
+    <main className="mx-auto max-w-lg px-8 py-16">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
       >
-        <p className="text-lg font-semibold">{STATUS_LABELS[order.status] ?? order.status}</p>
-        <p className="mt-1 text-sm text-gray-600">
-          This page updates automatically, no need to refresh.
+        <h1 className="text-2xl font-bold">Track your delivery</h1>
+        <p className="mt-1 flex items-center gap-1.5 text-gray-500">
+          <MapPin className="h-4 w-4 shrink-0 text-rose-500" />
+          {order.recipient_name} &mdash; {order.delivery_address}
         </p>
-      </div>
 
-      {proofUrl && (
-        <div className="mt-6">
-          <p className="mb-2 font-semibold">Proof of delivery</p>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={proofUrl} alt="Proof of delivery" className="max-w-sm rounded-lg border" />
+        <div className="mt-8 rounded-2xl border bg-white p-6 shadow-lg shadow-rose-100/50">
+          <OrderProgress status={order.status} />
+
+          <div className="mt-6 flex items-center gap-1.5 rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-500">
+            <RadioTower className="h-3.5 w-3.5 shrink-0 text-rose-500" />
+            This page updates automatically, no need to refresh.
+          </div>
         </div>
-      )}
+
+        {proofUrl && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className="mt-6 rounded-2xl border bg-white p-4 shadow-sm"
+          >
+            <p className="mb-2 font-semibold">Proof of delivery</p>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={proofUrl} alt="Proof of delivery" className="w-full rounded-lg border" />
+          </motion.div>
+        )}
+      </motion.div>
     </main>
   )
 }

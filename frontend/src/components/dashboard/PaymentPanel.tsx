@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Check, Copy, Link2, Wallet } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/shared/Button'
 
@@ -94,7 +95,8 @@ export function PaymentPanel({
 
   if (paymentStatus === 'paid') {
     return (
-      <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
+      <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
+        <Check className="h-3 w-3" />
         Paid
       </span>
     )
@@ -109,12 +111,14 @@ export function PaymentPanel({
   }
 
   return (
-    <div className="rounded border bg-gray-50 p-3">
-      <div className="flex items-center gap-2">
-        <span className="rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800">
+    <div className="rounded-xl border bg-gray-50 p-4 shadow-sm">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800">
+          <Wallet className="h-3 w-3" />
           Unpaid
         </span>
         <Button variant="secondary" onClick={getPaymentLink} loading={generating} type="button">
+          <Link2 className="h-3.5 w-3.5" />
           Get payment link
         </Button>
         <Button variant="ghost" onClick={markPaidManually} loading={markingPaid} type="button">
@@ -123,14 +127,15 @@ export function PaymentPanel({
       </div>
 
       {paymentLink && (
-        <div className="mt-2 flex items-center gap-2">
+        <div className="mt-3 flex items-center gap-2">
           <input
             readOnly
             value={paymentLink}
             onFocus={(e) => e.target.select()}
-            className="w-full min-w-0 flex-1 rounded border bg-white px-2 py-1 text-xs"
+            className="w-full min-w-0 flex-1 rounded-lg border bg-white px-2.5 py-1.5 text-xs"
           />
           <Button variant="secondary" onClick={copyLink} type="button">
+            {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
             {copied ? 'Copied' : 'Copy'}
           </Button>
         </div>

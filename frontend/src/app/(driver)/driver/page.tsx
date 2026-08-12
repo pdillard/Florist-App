@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { DeliveryCard } from '@/components/driver/DeliveryCard'
+import { StatusBadge } from '@/components/shared/StatusBadge'
 
 // Without generated Supabase types, the client can't tell that
 // order:orders(...) is a many-to-one embed (one order per delivery) and
@@ -83,8 +84,12 @@ export default async function DriverPage() {
           <h2 className="mb-3 font-semibold text-gray-500">Completed</h2>
           <div className="space-y-2">
             {pastDeliveries.map((delivery) => (
-              <div key={delivery.id} className="rounded border p-3 text-sm text-gray-500">
-                {delivery.order?.recipient_name} — {delivery.order?.status}
+              <div
+                key={delivery.id}
+                className="flex items-center justify-between rounded-lg border p-3 text-sm text-gray-500"
+              >
+                <span>{delivery.order?.recipient_name}</span>
+                <StatusBadge status={delivery.order?.status ?? ''} />
               </div>
             ))}
           </div>
