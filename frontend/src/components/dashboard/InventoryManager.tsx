@@ -5,6 +5,7 @@ import { AlertTriangle, Check, PackagePlus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/shared/Button'
 import { INPUT_STYLES } from '@/lib/ui'
+import { BulkImportProducts } from '@/components/dashboard/BulkImportProducts'
 
 type Product = {
   id: string
@@ -84,14 +85,27 @@ export function InventoryManager({
     setProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)))
   }
 
+  // BulkImportProducts hands back every row it actually wrote (both new
+  // inserts and updates to existing products) in one array - merge each
+  // one in by id rather than re-fetching the whole catalog.
+  function handleBulkImported(imported: Product[]) {
+    setProducts((prev) => {
+      const byId = new Map(prev.map((p) => [p.id, p]))
+      for (const p of imported) byId.set(p.id, p)
+      return Array.from(byId.values()).sort((a, b) => a.name.localeCompare(b.name))
+    })
+  }
+
   const lowStockCount = products.filter((p) => p.is_active && p.stock_qty <= 5).length
 
   return (
     <div className="space-y-8">
+      <BulkImportProducts merchantId={merchantId} products={products} onImported={handleBulkImported} />
+
       <form onSubmit={handleAddProduct} className="max-w-md space-y-3 rounded-xl border bg-white p-5 shadow-sm">
         <h2 className="flex items-center gap-1.5 font-semibold">
           <PackagePlus className="h-4 w-4 text-rose-500" />
-          Add product
+          Add a single product
         </h2>
         <input
           className={`w-full ${INPUT_STYLES}`}

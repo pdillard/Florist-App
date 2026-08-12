@@ -18,6 +18,16 @@ takes them and get entered via the merchant dashboard.
   failing silently.
 - **SMS**: Twilio is designed for but not wired up yet.
 
+## Onboarding a shop's catalog
+
+The Inventory page (dashboard) has a bulk import above the single-item "Add product" form:
+upload a CSV or paste directly from Excel/Google Sheets. Column headers are matched loosely
+(`price`, `cost`, `unit price`, etc. all work), a name and a price column are the only
+requirements, and re-importing updates existing products by matching on name (case-insensitive)
+instead of creating duplicates. See `components/dashboard/BulkImportProducts.tsx`. This exists
+because typing in a shop's full catalog by hand during onboarding is real friction that has
+nothing to do with whether the product is good.
+
 ## Local setup
 
 1. `cd frontend && npm install`
