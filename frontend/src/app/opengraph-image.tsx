@@ -26,6 +26,16 @@ export default function OpengraphImage() {
           style={{
             display: 'flex',
             alignItems: 'center',
+            // The parent is a column flex container with the default
+            // `alignItems: stretch`, so without this the badge would
+            // stretch to the full 1200px width. `width: 'fit-content'`
+            // was the intent (hug the text) but satori - the renderer
+            // behind next/og's ImageResponse - doesn't support that value
+            // and fails the whole build ("Invalid value fit-content for
+            // setWidth"). alignSelf: 'flex-start' gets the same visual
+            // result (content-sized pill, not stretched) through a
+            // property satori actually implements.
+            alignSelf: 'flex-start',
             gap: 8,
             fontSize: 20,
             fontWeight: 600,
@@ -34,7 +44,6 @@ export default function OpengraphImage() {
             border: '1px solid #fecdd3',
             borderRadius: 999,
             padding: '8px 20px',
-            width: 'fit-content',
             marginBottom: 32,
           }}
         >
