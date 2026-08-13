@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { clientIp, isRateLimited } from '@/lib/rateLimit'
 
 // Backs the public tracking page's proof-of-delivery photo. Deliberately a
 // separate route from a plain client-side storage.createSignedUrl() call,
@@ -22,10 +23,23 @@ import { createServiceClient } from '@/lib/supabase/service'
 //      That's what keeps this from being a path-traversal / IDOR into
 //      other shops' delivery photos despite using the service role to
 //      mint the URL.
+// This route has no login to gate it by design (see comment above), so IP
+// is the only signal available. 20 requests/minute comfortably covers one
+// visitor's page loading its own proof photo a few times (poll ticks,
+// retries, a refresh) while still capping a scripted loop trying random
+// order ids - see lib/rateLimit.ts for what this does and doesn't
+// guarantee on a serverless runtime.
+const RATE_LIMIT = 20
+const RATE_WINDOW_MS = 60_000
+
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ orderId: string }> }
 ) {
+  if (isRateLimited(clientIp(request), RATE_LIMIT, RATE_WINDOW_MS)) {
+    return NextResponse.json({ error: 'too many requests' }, { status: 429 })
+  }
+
   const { orderId } = await params
 
   const supabase = await createClient()
