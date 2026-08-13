@@ -28,7 +28,7 @@ const VARIANT_STYLES: Record<Variant, string> = {
   // the app stays on the plain black `primary` so the actual product
   // doesn't feel like it's trying to sell you something.
   accent:
-    'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-md shadow-rose-200 hover:shadow-lg hover:shadow-rose-300/70 hover:brightness-110',
+    'btn-shine relative overflow-hidden bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-md shadow-rose-200 hover:shadow-lg hover:shadow-rose-300/70 hover:brightness-110',
 }
 
 // Every clickable thing in the app shares this base: a real lift + shadow

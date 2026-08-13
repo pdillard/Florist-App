@@ -1,9 +1,22 @@
 import Link from 'next/link'
-import { Camera, MapPin, Phone, Puzzle, ShieldCheck, Sparkles } from 'lucide-react'
+import {
+  Camera,
+  CreditCard,
+  Lock,
+  MapPin,
+  MessageCircleQuestion,
+  Phone,
+  Puzzle,
+  ShieldCheck,
+  Sparkles,
+  Timer,
+  X,
+} from 'lucide-react'
 import { Button } from '@/components/shared/Button'
 import { Reveal } from '@/components/marketing/Reveal'
 import { GradientBlobs } from '@/components/marketing/GradientBlobs'
 import { TrackingCardMockup } from '@/components/marketing/TrackingCardMockup'
+import { FaqAccordion } from '@/components/marketing/FaqAccordion'
 
 // Server component, no data fetching or client hooks of its own - the
 // animated bits are isolated in small client components (Reveal,
@@ -15,6 +28,7 @@ export default function Home() {
     <main>
       {/* Hero */}
       <section className="relative overflow-hidden">
+        <div className="bg-dot-grid absolute inset-0" />
         <GradientBlobs />
 
         <div className="relative mx-auto grid max-w-6xl gap-12 px-8 pb-20 pt-20 sm:pt-28 lg:grid-cols-2 lg:items-center lg:gap-8">
@@ -24,7 +38,7 @@ export default function Home() {
               Built for local florists
             </div>
 
-            <h1 className="mt-5 text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl">
+            <h1 className="mt-5 text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-[3.4rem]">
               Stop the{' '}
               <span className="bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
                 &ldquo;where are my flowers?&rdquo;
@@ -50,9 +64,80 @@ export default function Home() {
             <p className="mt-6 text-sm text-gray-500">
               First 30 days free &middot; No setup fees &middot; Works alongside your existing POS
             </p>
+
+            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-t pt-6 text-xs text-gray-500">
+              <span className="flex items-center gap-1.5">
+                <Lock className="h-3.5 w-3.5 text-gray-400" />
+                Encrypted, shop-scoped data
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CreditCard className="h-3.5 w-3.5 text-gray-400" />
+                Payments secured by Stripe
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Timer className="h-3.5 w-3.5 text-gray-400" />
+                Live in minutes, not weeks
+              </span>
+            </div>
           </div>
 
           <TrackingCardMockup />
+        </div>
+      </section>
+
+      {/* Before / after */}
+      <section className="px-8 py-20">
+        <Reveal className="mx-auto max-w-2xl text-center">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-rose-600">
+            The problem
+          </h2>
+          <p className="mt-2 text-2xl font-bold sm:text-3xl">
+            You already know how this goes without it
+          </p>
+        </Reveal>
+
+        <div className="mx-auto mt-12 grid max-w-4xl gap-6 sm:grid-cols-2">
+          <Reveal>
+            <div className="h-full rounded-2xl border border-gray-200 bg-white p-6">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                Without it
+              </p>
+              <ul className="mt-4 space-y-3 text-sm text-gray-600">
+                {[
+                  'A customer calls asking where their order is, and nobody can say for sure',
+                  'You’re texting your driver to check, then calling the customer back',
+                  '“It says delivered” becomes an argument instead of a fact',
+                  'A refund gets issued just to make the call end',
+                ].map((line) => (
+                  <li key={line} className="flex items-start gap-2.5">
+                    <X className="mt-0.5 h-4 w-4 shrink-0 text-gray-300" />
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Reveal>
+
+          <Reveal delay={0.1}>
+            <div className="h-full rounded-2xl border border-rose-200 bg-rose-50/60 p-6">
+              <p className="text-xs font-semibold uppercase tracking-wide text-rose-600">
+                With it
+              </p>
+              <ul className="mt-4 space-y-3 text-sm text-gray-700">
+                {[
+                  'A live link tells the customer exactly where their order is, before they think to ask',
+                  'A timestamped photo — plus a GPS point when location access is on — lands the moment it’s delivered',
+                  '“It says delivered” comes with proof attached, not just a status label',
+                  'Disputes get resolved in seconds, with evidence instead of guesswork',
+                ].map((line) => (
+                  <li key={line} className="flex items-start gap-2.5">
+                    <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Reveal>
         </div>
       </section>
 
@@ -111,15 +196,59 @@ export default function Home() {
           <h2 className="mt-4 text-2xl font-bold sm:text-3xl">Proof that holds up</h2>
           <p className="mx-auto mt-3 max-w-xl text-gray-600">
             When someone calls saying their order never showed, you&apos;ll have a timestamp, a
-            GPS point, and a photo &mdash; not just your word against theirs. It&apos;s the
-            evidence you already need, captured automatically instead of chased down after the
-            fact.
+            photo, and &mdash; when the driver&apos;s device allows it &mdash; a GPS point, not
+            just your word against theirs. It&apos;s the evidence you already need, captured
+            automatically instead of chased down after the fact.
           </p>
         </Reveal>
       </section>
 
-      {/* Positioning */}
+      {/* Trust & security */}
       <section className="border-t bg-gray-50 px-8 py-20">
+        <div className="mx-auto max-w-5xl">
+          <Reveal className="text-center">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-rose-600">
+              Built to be trusted
+            </h2>
+            <p className="mt-2 text-2xl font-bold sm:text-3xl">
+              The unglamorous stuff, handled properly
+            </p>
+          </Reveal>
+
+          <div className="mt-12 grid gap-6 sm:grid-cols-3">
+            {[
+              {
+                icon: Lock,
+                title: 'Shop-scoped data',
+                body: 'Every shop only ever sees its own orders, drivers, and customers — enforced at the database level, not just in the app.',
+              },
+              {
+                icon: CreditCard,
+                title: 'Stripe-secured payments',
+                body: 'Card details never touch our servers. Checkout runs through Stripe, the same processor trusted by millions of businesses.',
+              },
+              {
+                icon: ShieldCheck,
+                title: 'Tamper-resistant proof',
+                body: 'Delivery timestamps are set by the server the moment a driver confirms drop-off, alongside a photo and, when location access is granted, a GPS point — none of it editable after the fact.',
+              },
+            ].map((item) => (
+              <Reveal key={item.title}>
+                <div className="h-full rounded-2xl border bg-white p-6 shadow-sm">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
+                    <item.icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-4 font-semibold">{item.title}</h3>
+                  <p className="mt-1.5 text-sm text-gray-600">{item.body}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Positioning */}
+      <section className="px-8 py-20">
         <Reveal className="mx-auto max-w-3xl text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600">
             <Puzzle className="h-6 w-6" />
@@ -130,6 +259,19 @@ export default function Home() {
             layer that sits next to it. Keep taking orders however you already do; this just
             handles getting them there and proving it.
           </p>
+        </Reveal>
+      </section>
+
+      {/* FAQ */}
+      <section className="border-t bg-gray-50 px-8 py-20">
+        <Reveal className="mx-auto max-w-2xl text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600">
+            <MessageCircleQuestion className="h-6 w-6" />
+          </div>
+          <h2 className="mt-4 text-2xl font-bold sm:text-3xl">Questions, answered</h2>
+        </Reveal>
+        <Reveal delay={0.1} className="mt-10">
+          <FaqAccordion />
         </Reveal>
       </section>
 

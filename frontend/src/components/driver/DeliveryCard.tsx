@@ -60,6 +60,25 @@ export function DeliveryCard({ delivery }: { delivery: Delivery }) {
     setStatus('out_for_delivery')
   }
 
+  // Best-effort GPS read from the driver's own device, captured right
+  // alongside the proof photo. Never blocks the upload: permission can be
+  // denied, the device may not support it, or a fix might just time out
+  // on a bad connection - the photo + server timestamp are still the real
+  // proof (see 008_order_state_machine.sql), this is corroborating.
+  function getCurrentPosition(): Promise<GeolocationPosition | null> {
+    return new Promise((resolve) => {
+      if (typeof navigator === 'undefined' || !navigator.geolocation) {
+        resolve(null)
+        return
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve(pos),
+        () => resolve(null),
+        { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
+      )
+    })
+  }
+
   // Uploading a photo doubles as the "mark delivered" action, since the
   // state machine requires a delivery_proofs row to exist before it will
   // allow the delivered transition, so there's no separate button for it.
@@ -72,7 +91,10 @@ export function DeliveryCard({ delivery }: { delivery: Delivery }) {
 
     const path = `${delivery.id}/${Date.now()}-${file.name}`
 
-    const { data: userData } = await supabase.auth.getUser()
+    const [{ data: userData }, position] = await Promise.all([
+      supabase.auth.getUser(),
+      getCurrentPosition(),
+    ])
 
     const { error: uploadError } = await supabase.storage
       .from('delivery-proofs')
@@ -88,6 +110,9 @@ export function DeliveryCard({ delivery }: { delivery: Delivery }) {
       delivery_id: delivery.id,
       photo_url: path,
       uploaded_by: userData.user?.id ?? null,
+      lat: position?.coords.latitude ?? null,
+      lng: position?.coords.longitude ?? null,
+      location_accuracy_m: position?.coords.accuracy ?? null,
     })
 
     if (insertError) {

@@ -42,3 +42,37 @@ body {
   background-size: 400px 100%;
   animation: shimmer 1.4s ease-in-out infinite;
 }
+
+/* Faint dot-grid used behind the hero, layered under the gradient blobs -
+   fades out toward the edges via a radial mask so it reads as texture,
+   not a hard-edged pattern tile. */
+.bg-dot-grid {
+  background-image: radial-gradient(circle, #e5e7eb 1px, transparent 1px);
+  background-size: 28px 28px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 20%, #000 40%, transparent 100%);
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 20%, #000 40%, transparent 100%);
+}
+
+/* Diagonal light sweep on hover for the marketing "accent" button -
+   purely decorative, gated behind hover so it never fires on page load. */
+@keyframes shine-sweep {
+  from {
+    transform: translateX(-150%) skewX(-20deg);
+  }
+  to {
+    transform: translateX(150%) skewX(-20deg);
+  }
+}
+
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.45) 50%, transparent 100%);
+  transform: translateX(-150%) skewX(-20deg);
+  pointer-events: none;
+}
+
+.btn-shine:hover::after {
+  animation: shine-sweep 0.85s ease-out;
+}

@@ -142,7 +142,13 @@ export default function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          minLength={6}
+          // This only enforces on this form - the real floor has to be set
+          // in Supabase Auth (Dashboard -> Authentication -> Policies ->
+          // Password requirements), since this attribute does nothing
+          // against a direct API call. Keep them in sync; 6 (Supabase's
+          // default) is too low for accounts that can end up handling
+          // real Stripe payment links.
+          minLength={8}
         />
 
         {mode === 'signup' && (

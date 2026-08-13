@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { MapPin, RadioTower } from 'lucide-react'
+import { MapPin, Navigation, RadioTower } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { OrderProgress } from '@/components/shared/OrderProgress'
 
@@ -12,8 +12,10 @@ type Order = {
   status: string
   recipient_name: string | null
   delivery_address: string
-  total_cents: number
 }
+
+const TERMINAL_STATUSES = ['delivered', 'failed', 'cancelled']
+const POLL_INTERVAL_MS = 15_000
 
 export default function TrackOrderPage() {
   const params = useParams<{ orderId: string }>()
@@ -21,86 +23,82 @@ export default function TrackOrderPage() {
 
   const [order, setOrder] = useState<Order | null>(null)
   const [proofUrl, setProofUrl] = useState<string | null>(null)
+  const [proofLocation, setProofLocation] = useState<{
+    lat: number
+    lng: number
+    accuracy: number | null
+  } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Tracks whether a proof fetch has already run this session, so a poll
+  // tick doesn't re-request the (signed, already-fetched) photo URL every
+  // 15 seconds once it's delivered.
+  const proofFetchedRef = useRef(false)
 
   useEffect(() => {
     const supabase = createClient()
     let active = true
+    let timer: ReturnType<typeof setTimeout> | null = null
 
     async function loadProof() {
-      const { data: delivery } = await supabase
-        .from('deliveries')
-        .select('id')
-        .eq('order_id', orderId)
-        .single()
+      if (proofFetchedRef.current) return
+      proofFetchedRef.current = true
 
-      if (!delivery) return
+      const res = await fetch(`/api/track/${orderId}/proof`)
+      if (!active || !res.ok) return
 
-      const { data: proof } = await supabase
-        .from('delivery_proofs')
-        .select('photo_url')
-        .eq('delivery_id', delivery.id)
-        .order('uploaded_at', { ascending: false })
-        .limit(1)
-        .single()
-
-      if (!proof) return
-
-      const { data: signed } = await supabase.storage
-        .from('delivery-proofs')
-        .createSignedUrl(proof.photo_url, 60 * 60)
-
-      if (active && signed) setProofUrl(signed.signedUrl)
+      const data = await res.json()
+      setProofUrl(data.url)
+      if (data.lat != null && data.lng != null) {
+        setProofLocation({ lat: data.lat, lng: data.lng, accuracy: data.accuracy })
+      }
     }
 
+    // This page is explicitly meant to work with no login - a link a shop
+    // sends to whoever's receiving the flowers. orders_select (sql/006)
+    // has no anon path (and shouldn't - see sql/017's comment for why a
+    // wider table-level policy would leak more than intended), so this
+    // calls a column-limited SECURITY DEFINER function instead of
+    // querying the table directly. That function is what actually decides
+    // what's real; there's nothing to trick client-side by knowing the id.
     async function load() {
-      const { data, error } = await supabase
-        .from('orders')
-        .select('id, status, recipient_name, delivery_address, total_cents')
-        .eq('id', orderId)
-        .single()
+      const { data: rawData, error } = await supabase
+        .rpc('get_order_tracking', { p_order_id: orderId })
+        .maybeSingle()
 
       if (!active) return
 
-      if (error) {
-        setError(error.message)
+      if (error || !rawData) {
+        setError(error?.message ?? null)
         setLoading(false)
         return
       }
 
+      const data = rawData as Order
       setOrder(data)
       setLoading(false)
 
-      if (data.status === 'delivered') {
-        await loadProof()
+      if (TERMINAL_STATUSES.includes(data.status)) {
+        if (data.status === 'delivered') await loadProof()
+        return
       }
+
+      // Realtime's postgres_changes authorization checks the same RLS the
+      // direct table query above can't get past for an anonymous visitor,
+      // so a push subscription here would silently never fire for anyone
+      // without a session. Short-interval polling instead - imperceptible
+      // for something that changes a handful of times over a delivery's
+      // lifecycle, and it works identically whether or not the visitor is
+      // signed in.
+      timer = setTimeout(load, POLL_INTERVAL_MS)
     }
 
     load()
 
-    // Live updates: no polling, no manual refresh needed. Requires orders
-    // to be added to the supabase_realtime publication (see
-    // sql/010_enable_realtime_orders.sql) or this subscribes successfully
-    // but never actually receives anything.
-    const channel = supabase
-      .channel(`order-${orderId}`)
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'orders', filter: `id=eq.${orderId}` },
-        (payload) => {
-          const updated = payload.new as Order
-          setOrder(updated)
-          if (updated.status === 'delivered') {
-            loadProof()
-          }
-        }
-      )
-      .subscribe()
-
     return () => {
       active = false
-      supabase.removeChannel(channel)
+      if (timer) clearTimeout(timer)
     }
   }, [orderId])
 
@@ -156,6 +154,17 @@ export default function TrackOrderPage() {
             <p className="mb-2 font-semibold">Proof of delivery</p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={proofUrl} alt="Proof of delivery" className="w-full rounded-lg border" />
+            {proofLocation && (
+              <a
+                href={`https://www.google.com/maps?q=${proofLocation.lat},${proofLocation.lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex items-center gap-1.5 text-sm text-rose-600 transition-colors hover:text-rose-800 hover:underline"
+              >
+                <Navigation className="h-3.5 w-3.5" />
+                View GPS location of delivery
+              </a>
+            )}
           </motion.div>
         )}
       </motion.div>

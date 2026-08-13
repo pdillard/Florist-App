@@ -1,6 +1,6 @@
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, MapPin, Package } from 'lucide-react'
+import { ArrowLeft, MapPin, Navigation, Package } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { MerchantNav } from '@/components/dashboard/MerchantNav'
 import { OrderStatusPanel } from '@/components/dashboard/OrderStatusPanel'
@@ -25,6 +25,14 @@ type OrderEventRow = {
   actor: { name: string | null } | null
 }
 
+type DeliveryProofRow = {
+  id: string
+  lat: number | null
+  lng: number | null
+  location_accuracy_m: number | null
+  created_at: string
+}
+
 type DeliveryRow = {
   id: string
   driver_id: string | null
@@ -32,6 +40,7 @@ type DeliveryRow = {
   delivered_at: string | null
   failure_reason: string | null
   driver: { name: string | null } | null
+  delivery_proofs: DeliveryProofRow[] | null
 }
 
 export default async function OrderDetailPage({
@@ -78,7 +87,7 @@ export default async function OrderDetailPage({
       supabase
         .from('deliveries')
         .select(
-          'id, driver_id, assigned_at, picked_up_at, delivered_at, failure_reason, driver:profiles!driver_id(name)'
+          'id, driver_id, assigned_at, picked_up_at, delivered_at, failure_reason, driver:profiles!driver_id(name), delivery_proofs(id, lat, lng, location_accuracy_m, created_at)'
         )
         .eq('order_id', orderId)
         .maybeSingle(),
@@ -147,6 +156,23 @@ export default async function OrderDetailPage({
               {delivery.failure_reason && (
                 <p className="text-red-600">Failed: {delivery.failure_reason}</p>
               )}
+              {(() => {
+                const proof = delivery.delivery_proofs?.[0]
+                if (!proof || proof.lat == null || proof.lng == null) return null
+                return (
+                  <a
+                    href={`https://www.google.com/maps?q=${proof.lat},${proof.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-rose-600 transition-colors hover:text-rose-800 hover:underline"
+                  >
+                    <Navigation className="h-3.5 w-3.5" />
+                    View delivery GPS point
+                    {proof.location_accuracy_m != null &&
+                      ` (±${Math.round(proof.location_accuracy_m)}m)`}
+                  </a>
+                )
+              })()}
             </div>
           )}
         </div>
