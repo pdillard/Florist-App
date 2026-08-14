@@ -3,6 +3,8 @@
 **Method:** Full adversarial code review of every RLS policy, SQL function, API route, and the storage/auth configuration, plus a full-history scan of the GitHub repo for leaked secrets. I could not run live black-box attacks against the deployed Supabase backend — outbound network access to `*.supabase.co` is blocked from this sandbox — so everything below is grounded in reading the actual enforcement logic (policies, functions, grants), not guesswork.
 
 > **Update, same day:** you ran Supabase's own Dashboard → Advisors → Security scan and pasted the results back. It caught something my manual read missed — see "Update: critical finding from Supabase's linter" below. Fixed in `sql/018`.
+>
+> **Second update, same day:** you pulled up the actual `profiles_update_own` policy from the dashboard and pasted it back — confirming the one item the original review flagged as "couldn't verify from code alone" was in fact a live, exploitable privilege-escalation hole. See "Update: profiles self-update escalation" at the bottom. Fixed in `sql/019`.
 
 ## Bottom line
 
@@ -84,7 +86,7 @@ Explicitly revokes the implicit `PUBLIC` grant (which includes `anon`) from:
 
 ### One more from the linter: leaked password protection
 
-The scan also flagged `auth_leaked_password_protection` as disabled — a free Supabase Auth feature that checks new passwords against the HaveIBeenPwned breach database at signup. Turn it on: Dashboard → Authentication → Policies (or Auth settings, depending on your Supabase version) → Password Security. Costs nothing, catches the "password123" problem before it becomes an account.
+The scan also flagged `auth_leaked_password_protection` as disabled — a Supabase Auth feature that checks new passwords against the HaveIBeenPwned breach database at signup. **Correction: this is a Pro-plan feature, not free** (I said "costs nothing" originally — wrong, confirmed by you checking). Deliberately deferred for now rather than upgrading the Supabase plan just for this; it's the least urgent item on this list. Revisit if/when there's another reason to be on Pro anyway.
 
 ### Confirmed fixed: second scan after running `sql/018`
 
@@ -97,4 +99,30 @@ You ran the Advisor a second time after applying `sql/018` and pasted the result
   - `create_order`, `merchant_create_order`, `assign_driver`, `update_order_status`, `mark_order_paid_manually`, `regenerate_invite_code` showing up under `authenticated` only (no longer under `anon`, unlike the first scan) — also intentional. These are meant to be called by signed-in users; each one checks `is_merchant()`/`auth.uid()`/ownership internally before doing anything. The linter can't know that from the outside, so it flags every `authenticated`-callable `SECURITY DEFINER` function as a generic "make sure this is intentional" — this is that confirmation.
   - `auth_leaked_password_protection` — still open, still just the one dashboard toggle from the section above.
 
-Nothing left to fix in code from this pass. The one remaining action item is the password-protection toggle.
+Nothing left to fix in code from this pass. The one remaining action item is the password-protection toggle (deferred, see correction above).
+
+---
+
+## Update: `profiles` self-update privilege escalation — confirmed and fixed
+
+The original review flagged this as the one item it genuinely couldn't verify: whether `profiles` had a permissive `UPDATE` policy letting a user change their own `role` or `merchant_id`. Base schema for that table was never in tracked migrations, so there was nothing to read. You pulled up the actual policy from the dashboard and pasted it back:
+
+```sql
+alter policy "profiles_update_own"
+on "public"."profiles"
+to public
+using ((id = auth.uid()));
+```
+
+**Confirmed real.** RLS `using`/`with check` clauses restrict *which rows* a statement can touch, not *which columns*. `id = auth.uid()` correctly limits an update to your own row — but says nothing about what you're allowed to change on it. With no `WITH CHECK` (and Postgres's fallback behavior there doesn't help, since `id` isn't what's being abused), any signed-in user — including a customer who just finished signing up thirty seconds ago — could call:
+
+```
+PATCH /rest/v1/profiles?id=eq.<their own id>
+{ "role": "merchant", "merchant_id": "<any existing shop's id>" }
+```
+
+and it would succeed. That's a full takeover of any shop whose id they could learn: read/write its orders and products, assign its drivers, regenerate its invite code, mark its orders paid. Worse than the `_mark_order_paid` finding in one way — that one required knowing an order id (a random uuid); this one only requires knowing a *merchant* id, which shows up in more places once a shop is actually operating (URLs, RLS-scoped API responses to that shop's own staff, etc.) and doesn't even require being a customer of that shop.
+
+**Fix:** `sql/019_lock_down_profiles_update.sql` revokes `UPDATE` on `profiles` entirely, for every role. Confirmed via `grep` that nothing in the frontend has ever called `.from('profiles').update(...)` — this grant had zero legitimate use today, so closing it fully was safer than trying to write a `WITH CHECK` narrow enough to trust. If a "edit my name/phone" feature gets built later, it should go through a dedicated `SECURITY DEFINER` RPC that only touches those two columns — the same pattern every other mutation in this app already uses — rather than reopening a raw table grant.
+
+**Run `sql/019` now.** This is live and exploitable until you do — higher priority than the two remaining dashboard toggles.
