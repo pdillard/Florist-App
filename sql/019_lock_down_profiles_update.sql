@@ -1,0 +1,41 @@
+-- Closes a privilege-escalation hole in the "profiles_update_own" policy
+-- (created outside tracked migrations, in the same untracked-base-schema
+-- category as the orders/products/delivery_proofs tables - see the note in
+-- the original security review about not being able to verify this one
+-- from code alone. Now verified, live, and it was real).
+--
+-- The policy: `using (id = auth.uid())`, no WITH CHECK. Postgres RLS row
+-- policies are ROW-scoped, not COLUMN-scoped - "using (id = auth.uid())"
+-- correctly limits you to updating only your own row, but it does nothing
+-- to limit WHICH COLUMNS on that row you're allowed to change. With no
+-- WITH CHECK either (Postgres falls back to reusing USING for that, which
+-- doesn't help here since id isn't what's being abused), any signed-in
+-- user could call:
+--
+--   PATCH /rest/v1/profiles?id=eq.<their own id>
+--   { "role": "merchant", "merchant_id": "<any existing shop's id>" }
+--
+-- ...and it would succeed. id = auth.uid() holds before and after the
+-- update (id itself never changes), so the policy has nothing to say
+-- about role or merchant_id being rewritten. The result: any fresh
+-- customer signup could self-promote to merchant of an EXISTING shop
+-- (not just spin up their own, which is the intended, harmless merchant
+-- signup path) and inherit full is_merchant() + my_merchant_id() rights
+-- over it - read/write that shop's orders and products, assign drivers,
+-- regenerate its invite code, mark its orders paid. A complete takeover
+-- of any shop whose id an attacker could learn (and merchant ids show up
+-- in plenty of places once a shop is operating - URLs, RLS-scoped
+-- responses to that shop's own staff, etc.).
+--
+-- Fix: revoke UPDATE entirely rather than trying to patch the policy with
+-- a WITH CHECK that pins role/merchant_id, because nothing in this
+-- codebase currently updates profiles from the client at all (checked -
+-- there is no `.from('profiles').update(...)` anywhere in frontend/src).
+-- There is no legitimate use of this UPDATE grant today, so the correct
+-- fix is closing it, not narrowing it. If a "edit my name/phone" feature
+-- gets built later, it should go through a SECURITY DEFINER RPC that only
+-- ever touches name/phone (same pattern as every other mutation in this
+-- app - update_order_status, mark_order_paid_manually, etc. - rather than
+-- re-opening a raw table UPDATE grant and trusting a policy expression
+-- alone to hold the line on which columns matter).
+revoke update on public.profiles from public, anon, authenticated;
